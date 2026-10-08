@@ -1,0 +1,11 @@
+/* Mobile fixes */
+@media (max-width: 768px) {
+    input, select, textarea { font-size: 16px !important; }
+    body, html { overflow-x: hidden; width: 100%; }
+    button, .btn, .nav-item { min-height: 44px; }
+    .product-card:hover { transform: none !important; }
+    .sticky-header { position: sticky; top: 0; z-index: 1000; }
+}
+
+:root { --vh: 1vh; }
+.full-height { height: calc(var(--vh, 1vh) * 100); }

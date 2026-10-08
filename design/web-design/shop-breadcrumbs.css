@@ -1,0 +1,34 @@
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) 0; 
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    flex-wrap: wrap;
+    margin-bottom: 0; 
+}
+
+.breadcrumbs a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.breadcrumbs .separator {
+    color: var(--muted);
+}
+
+.breadcrumbs .current {
+    color: var(--text);
+    font-weight: 500;
+}
+@media (max-width: 400px) {
+    .breadcrumbs a, .breadcrumbs .current { font-size: 13px;}
+}

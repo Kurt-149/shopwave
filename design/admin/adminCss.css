@@ -1,0 +1,96 @@
+
+.container-admin{
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 var(--space-sm);
+    background: var(--bg);
+}
+
+.admin-content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+/* Pagination Component */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-xl);
+    padding: var(--space-lg) 0;
+}
+.pagination-info {
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    margin-right: var(--space-md);
+    text-decoration: none;
+}
+.pagination-btn {
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-size: var(--fs-sm);
+    min-width: 36px;
+    text-align: center;
+    transition: all var(--transition);
+}
+.pagination-btn:hover:not(.disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+.pagination-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.filters-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+.filters-grid-3col {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: var(--space-md);
+    align-items: end;
+}
+.filters-grid-fullwidth {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-sm);
+    align-items: end;
+}
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+.page-title {
+    font-size: var(--fs-xl);
+    margin: 0;
+}
+
+@media (max-width: 968px) {
+    .admin-content-wrapper {
+        padding: 0 var(--space-md);
+    }
+    .filters-grid-2col, .filters-grid-3col, .filters-grid-fullwidth {
+        grid-template-columns: 1fr;
+    }
+    .pagination {
+        flex-wrap: wrap;
+    }
+}

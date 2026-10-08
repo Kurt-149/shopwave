@@ -1,0 +1,25 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Force HTTPS in production (skipped for localhost so local development works)
+RewriteCond %{HTTP_HOST} !^localhost [NC]
+RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+<IfModule mod_headers.c>
+    <If "%{HTTPS} == 'on'">
+        Header always set Strict-Transport-Security "max-age=300"
+    </If>
+</IfModule>
+
+# 2. Block access to sensitive files
+<FilesMatch "(^\.|wp-config\.php|\.htaccess|error[_.]log|\.log$|\.sql$|readme\.html|license\.txt)">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# 4. Disable directory browsing
+Options -Indexes
+

@@ -1,0 +1,9 @@
+.env
+.env.*
+sessions/
+storage/
+backups/
+*.log
+*.sql
+vendor/
+node_modules/
