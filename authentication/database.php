@@ -25,7 +25,7 @@ $options = [
     PDO::ATTR_TIMEOUT => 15,
 ];
 
-$maxRetries = 3;
+$maxRetries = 10;
 $retryCount = 0;
 $pdo = null;
 
