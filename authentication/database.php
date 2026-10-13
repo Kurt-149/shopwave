@@ -6,7 +6,7 @@ if (basename($_SERVER["PHP_SELF"]) == "database.php") {
 
 // env.php and .env live in the project root (one level above /authentication)
 require_once __DIR__ . "/../env.php";
-loadEnv(__DIR__ . "/../.env");
+loadEnv(__DIR__ . "/env");
 
 $isLocalhost = env("APP_ENV") === "local";
 $host = env("DB_HOST");
