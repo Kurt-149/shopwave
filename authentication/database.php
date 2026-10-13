@@ -4,9 +4,17 @@ if (basename($_SERVER["PHP_SELF"]) == "database.php") {
   die("Access denied.");
 }
 
-// env.php and .env live in the project root (one level above /authentication)
-require_once __DIR__ . "/.env.php";
-loadEnv(__DIR__ . "/.env");
+// This file is in /authentication, so the project root is one level up.
+$rootDir = dirname(__DIR__);
+$envHelper = $rootDir . "/env.php";
+$envFile = $rootDir . "/.env";
+
+if (!file_exists($envHelper)) {
+  die("Missing env.php. Expected at: " . $envHelper);
+}
+
+require_once $envHelper;
+loadEnv($envFile);
 
 $isLocalhost = env("APP_ENV") === "local";
 $host = env("DB_HOST");
@@ -15,6 +23,16 @@ $database_name = env("DB_NAME");
 $user = env("DB_USER");
 $password = env("DB_PASS");
 $charset = "utf8mb4";
+
+if (empty($host) || empty($database_name) || empty($user)) {
+  $message = "Database settings missing. Check that .env exists at: " . $envFile
+    . " and contains DB_HOST, DB_NAME, and DB_USER.";
+  if ($isLocalhost) {
+    die($message);
+  }
+  die("Site under maintenance. Please try again later.");
+}
+
 $dsn = "mysql:host=$host;port=$port;dbname=$database_name;charset=$charset";
 
 $options = [
@@ -41,7 +59,7 @@ while (!$pdo && $retryCount < $maxRetries) {
     if ($retryCount >= $maxRetries) {
       if ($isLocalhost) {
         die(
-          "Database connection faileds after $maxRetries attempts: " .
+          "Database connection failed after $maxRetries attempts: " .
             $e->getMessage()
         );
       } else {
