@@ -25,8 +25,10 @@ $password = env("DB_PASS");
 $charset = "utf8mb4";
 
 if (empty($host) || empty($database_name) || empty($user)) {
-  $message = "Database settings missing. Check that .env exists at: " . $envFile
-    . " and contains DB_HOST, DB_NAME, and DB_USER.";
+  $message =
+    "Database settings missing. Check that .env exists at: " .
+    $envFile .
+    " and contains DB_HOST, DB_NAME, and DB_USER.";
   if ($isLocalhost) {
     die($message);
   }
