@@ -41,7 +41,7 @@ while (!$pdo && $retryCount < $maxRetries) {
     if ($retryCount >= $maxRetries) {
       if ($isLocalhost) {
         die(
-          "Database connection failed after $maxRetries attempts: " .
+          "Database connection faileds after $maxRetries attempts: " .
             $e->getMessage()
         );
       } else {
