@@ -274,13 +274,13 @@ function timeAgo(string $dt): string
                         </div>
                         <div class="product-price-section">
                             <?php if (!empty($product['discount_price']) && $product['discount_price'] < $product['price']): ?>
-                                <span class="current-price">P<?php echo number_format($product['discount_price'], 2); ?></span>
-                                <span class="original-price">P<?php echo number_format($product['price'], 2); ?></span>
+                                <span class="current-price">₱<?php echo number_format($product['discount_price'], 2); ?></span>
+                                <span class="original-price">₱<?php echo number_format($product['price'], 2); ?></span>
                                 <span class="discount-percentage">
                                     -<?php echo round((($product['price'] - $product['discount_price']) / $product['price']) * 100); ?>% off
                                 </span>
                             <?php else: ?>
-                                <span class="current-price">P<?php echo number_format($product['price'], 2); ?></span>
+                                <span class="current-price">₱<?php echo number_format($product['price'], 2); ?></span>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -437,7 +437,7 @@ function timeAgo(string $dt): string
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
                     </svg>
-                    Free Returns
+                    30-Day Returns
                 </div>
                 <div class="trust-item">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
@@ -449,7 +449,7 @@ function timeAgo(string $dt): string
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
                     </svg>
-                    Ships in 1–3 Days
+                    Ships in 2–5 Business Days
                 </div>
             </div>
 
@@ -461,7 +461,7 @@ function timeAgo(string $dt): string
                     <?php if (!empty($product['description'])): ?>
                         <p><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
                     <?php else: ?>
-                        <p class="no-description">No description available for this product.</p>
+                        <p class="no-description">Description coming soon.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -693,10 +693,10 @@ function timeAgo(string $dt): string
                                     <?php endif; ?>
                                     <div class="related-product-price">
                                         <?php if (!empty($related['discount_price']) && $related['discount_price'] < $related['price']): ?>
-                                            <span class="price-current">P<?php echo number_format($related['discount_price'], 2); ?></span>
-                                            <span class="price-original">P<?php echo number_format($related['price'], 2); ?></span>
+                                            <span class="price-current">₱<?php echo number_format($related['discount_price'], 2); ?></span>
+                                            <span class="price-original">₱<?php echo number_format($related['price'], 2); ?></span>
                                         <?php else: ?>
-                                            <span class="price-current">P<?php echo number_format($related['price'], 2); ?></span>
+                                            <span class="price-current">₱<?php echo number_format($related['price'], 2); ?></span>
                                         <?php endif; ?>
                                     </div>
                                 </div>

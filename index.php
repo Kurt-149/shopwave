@@ -22,7 +22,9 @@ $footerCategories = [];
 try {
     if ($pdo) {
         $featuredStmt = $pdo->query("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.status = 'approved') AS avg_rating,
+                (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.status = 'approved') AS rating_count
             FROM products p 
             LEFT JOIN categories c ON p.category_id = c.id 
             WHERE p.status = 'active' 
@@ -56,6 +58,23 @@ try {
     }
 } catch (PDOException $e) {
     error_log("Categories error: " . $e->getMessage());
+}
+
+$latestReviews = [];
+try {
+    if ($pdo) {
+        $revStmt = $pdo->query("
+            SELECT r.rating, r.comment, r.verified_purchase, u.username
+            FROM reviews r
+            JOIN users u ON u.id = r.user_id
+            WHERE r.status = 'approved'
+            ORDER BY r.created_at DESC
+            LIMIT 3
+        ");
+        $latestReviews = $revStmt->fetchAll();
+    }
+} catch (PDOException $e) {
+    error_log("Reviews error: " . $e->getMessage());
 }
 
 $unreadCount = 0;
@@ -267,43 +286,23 @@ function categoryImageUrl(string $imageUrl): string
         </div>
 
         <div class="page-body">
-            <div class="hero-modern">
-                <div class="hero-content">
-                    <span class="hero-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#92400e">
-                            <path d="m489-460 91-55 91 55-24-104 80-69-105-9-42-98-42 98-105 9 80 69-24 104Zm19 260h224q-7 26-24 42t-44 20L228-85q-33 5-59.5-15.5T138-154L85-591q-4-33 16-59t53-30l46-6v80l-36 5 54 437 290-36Zm-148-80q-33 0-56.5-23.5T280-360v-440q0-33 23.5-56.5T360-880h440q33 0 56.5 23.5T880-800v440q0 33-23.5 56.5T800-280H360Z" />
-                        </svg>
-                        New Arrivals
-                    </span>
-                    <h1>Discover Your Style</h1>
-                    <p>Stylish, comfortable, and affordable beachwear that enhances your confidence. Free shipping on orders over ₱1,000!</p>
-                    <div class="hero-buttons">
-                        <a href="<?php echo $root; ?>/public/shop.php" class="btn-primary">
-                            <span>Explore Collection</span>
-                        </a>
-                        <a href="#featured" class="btn-secondary">View Featured</a>
-                    </div>
-                    <div class="hero-note">Shop the coastal collection for women, men, and kids.</div>
+            <section class="hm-hero">
+                <div class="hm-hero-image">
+                    <img src="./images/hero-images/women-image.jpg" alt="Women's beachwear collection" loading="eager">
+                    <span class="hm-hero-caption">Coastal collection</span>
                 </div>
-                <div class="hero-visual">
-                    <div class="hero-collage">
-                        <div class="collage-main">
-                            <img src="./images/hero-images/women-image.jpg" alt="Women's beachwear collection" loading="eager">
-                            <div class="collage-label">Women</div>
-                        </div>
-                        <div class="collage-side">
-                            <div class="collage-top">
-                                <img src="./images/hero-images/men-image.jpg" alt="Men's beachwear collection" loading="lazy">
-                                <div class="collage-label">Men</div>
-                            </div>
-                            <div class="collage-bottom">
-                                <img src="./images/hero-images/kid-image.jpg" alt="Kids beachwear collection" loading="lazy">
-                                <div class="collage-label">Kids</div>
-                            </div>
-                        </div>
+                <div class="hm-hero-row">
+                    <div class="hm-hero-text">
+                        <span class="hm-pill">New season</span>
+                        <h1>Discover your style</h1>
+                        <p>Stylish, comfortable, and affordable beachwear that enhances your confidence. Free shipping on orders over ₱1,000.</p>
+                    </div>
+                    <div class="hm-hero-actions">
+                        <a href="<?php echo $root; ?>/public/shop.php" class="hm-btn hm-btn-primary">Explore collection</a>
+                        <a href="#featured" class="hm-btn hm-btn-outline">View featured</a>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div class="trust-badges">
                 <div class="trust-item">
@@ -344,6 +343,26 @@ function categoryImageUrl(string $imageUrl): string
                 </div>
             </div>
 
+            <section class="hm-section">
+                <div class="hm-head"><h2>Shop by occasion</h2></div>
+                <div class="hm-occasions">
+                    <a href="<?php echo $root; ?>/public/shop.php" class="hm-occasion" style="background-image:url('./images/hero-images/women-image.jpg');"><span>Beach day</span></a>
+                    <a href="<?php echo $root; ?>/public/shop.php" class="hm-occasion" style="background-image:url('./images/hero-images/men-image.jpg');"><span>Resort stay</span></a>
+                    <a href="<?php echo $root; ?>/public/shop.php" class="hm-occasion" style="background-image:url('./images/hero-images/kid-image.jpg');"><span>Family outing</span></a>
+                </div>
+            </section>
+
+            <section class="hm-section" id="categories">
+                <div class="hm-head"><h2>Shop by category</h2></div>
+                <div class="hm-categories">
+                    <?php foreach ($footerCategories as $category): ?>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=<?php echo (int)$category['id']; ?>" class="hm-cat"style="background-image: url('<?php echo htmlspecialchars($root . '/' . ltrim(!empty($category['image_url']) ? (string)$category['image_url'] : 'images/categories/' . (int)$category['id'] . '.jpg', '/'), ENT_QUOTES); ?>');">
+                            <span><?php echo htmlspecialchars($category['name']); ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+
             <?php if (!empty($featuredProducts)): ?>
                 <section class="section-featured" id="featured">
                     <div class="section-header">
@@ -363,15 +382,26 @@ function categoryImageUrl(string $imageUrl): string
                             </svg>
                         </a>
                     </div>
+                    <div class="filter-pills">
+                        <a href="<?php echo $root; ?>/public/shop.php" class="pill pill-active">All</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1" class="pill">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2" class="pill">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3" class="pill">Kids</a>
+                    </div>
                     <div class="products-grid">
                         <?php foreach ($featuredProducts as $product): ?>
-                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>" class="product-card">
-                                <?php if (!empty($product['discount_price'])): ?>
-                                    <div class="product-badge">SALE</div>
-                                <?php endif; ?>
+                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo (int)$product['id']; ?>" class="product-card">
+                                <?php
+                                $onSale = !empty($product['discount_price']) && (float)$product['discount_price'] < (float)$product['price'];
+                                $ratingCount = (int)($product['rating_count'] ?? 0);
+                                $avgRating = (float)($product['avg_rating'] ?? 0);
+                                ?>
                                 <div class="product-image">
+                                    <?php if ($onSale): ?>
+                                        <span class="product-badge">Save ₱<?php echo number_format((float)$product['price'] - (float)$product['discount_price'], 0); ?></span>
+                                    <?php endif; ?>
                                     <?php if (!empty($product['image_url'])): ?>
-                                        <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                        <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
                                     <?php else: ?>
                                         <div class="no-image">No Image</div>
                                     <?php endif; ?>
@@ -379,12 +409,20 @@ function categoryImageUrl(string $imageUrl): string
                                 <div class="product-info">
                                     <span class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?></span>
                                     <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
+                                    <?php if ($ratingCount > 0): ?>
+                                        <div class="product-rating"><span class="pr-stars">★ <?php echo number_format($avgRating, 1); ?></span><span class="pr-count">(<?php echo $ratingCount; ?>)</span></div>
+                                    <?php else: ?>
+                                        <div class="product-rating pr-none">No ratings yet</div>
+                                    <?php endif; ?>
                                     <div class="product-price">
-                                        <span class="price-current">₱<?php echo number_format($product['price'], 2); ?></span>
-                                        <?php if (!empty($product['discount_price'])): ?>
-                                            <span class="price-original">₱<?php echo number_format($product['discount_price'], 2); ?></span>
+                                        <?php if ($onSale): ?>
+                                            <span class="price-current">₱<?php echo number_format($product['discount_price'], 2); ?></span>
+                                            <span class="price-original">₱<?php echo number_format($product['price'], 2); ?></span>
+                                        <?php else: ?>
+                                            <span class="price-current">₱<?php echo number_format($product['price'], 2); ?></span>
                                         <?php endif; ?>
                                     </div>
+                                    <span class="product-cta">View product →</span>
                                 </div>
                             </a>
                         <?php endforeach; ?>
@@ -392,30 +430,46 @@ function categoryImageUrl(string $imageUrl): string
                 </section>
             <?php endif; ?>
 
-            <section class="section-categories">
+            <?php if (!empty($latestReviews)): ?>
+            <section class="section-reviews">
                 <div class="section-header">
                     <div>
-                        <h2>
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f">
-                                <path d="M856-390 570-104q-12 12-27 18t-30 6q-15 0-30-6t-27-18L103-457q-11-11-17-25.5T80-513v-287q0-33 23.5-56.5T160-880h287q16 0 31 6.5t26 17.5l352 353q12 12 17.5 27t5.5 30q0 15-5.5 29.5T856-390ZM513-160l286-286-353-354H160v286l353 354ZM260-640q25 0 42.5-17.5T320-700q0-25-17.5-42.5T260-760q-25 0-42.5 17.5T200-700q0 25 17.5 42.5T260-640Z" />
-                            </svg>
-                            Shop by Category
-                        </h2>
-                        <p>Find exactly what you're looking for</p>
+                        <h2>Customer reviews</h2>
+                        <p>What shoppers say about SHOPWAVE</p>
                     </div>
                 </div>
-                <div class="categories-grid">
-                    <?php foreach ($footerCategories as $category): ?>
-                        <a href="<?php echo $root; ?>/public/shop.php?category=<?php echo $category['id']; ?>" class="category-card">
-                            <div class="category-image" style="background-image: url('<?php echo $root . '/' . ltrim((string)$category['image_url'], '/'); ?>');"></div>
-                            <div class="category-overlay">
-                                <h3><?php echo htmlspecialchars($category['name']); ?></h3>
-                                <p>Shop Now →</p>
+                <div class="reviews-grid">
+                    <?php foreach ($latestReviews as $rev):
+                        $stars = max(1, min(5, (int)$rev['rating']));
+                    ?>
+                        <div class="review-card">
+                            <span class="rv-quote" aria-hidden="true">“</span>
+                            <div class="review-stars" aria-label="<?php echo $stars; ?> out of 5 stars"><?php echo str_repeat('★', $stars) . str_repeat('☆', 5 - $stars); ?></div>
+                            <p class="review-text"><?php echo htmlspecialchars((string)$rev['comment']); ?></p>
+                            <div class="review-meta">
+                                <span class="rv-avatar" aria-hidden="true"><?php echo htmlspecialchars(strtoupper(substr($rev['username'], 0, 1))); ?></span>
+                                <strong><?php echo htmlspecialchars($rev['username']); ?></strong>
+                                <?php if (!empty($rev['verified_purchase'])): ?>
+                                    <span class="verified">Verified buyer</span>
+                                <?php endif; ?>
                             </div>
-                        </a>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </section>
+            <?php endif; ?>
+
+            <?php if (empty($latestReviews)): ?>
+            <section class="section-reviews hm-empty-reviews">
+                <div class="section-header">
+                    <div>
+                        <h2>Customer reviews</h2>
+                        <p>No reviews yet. Shop a piece and be the first to share how it fits.</p>
+                    </div>
+                </div>
+                <a href="<?php echo $root; ?>/public/shop.php" class="hm-btn hm-btn-outline hm-empty-btn">Browse the collection</a>
+            </section>
+            <?php endif; ?>
 
             <section class="section-story">
                 <div class="story-card">
@@ -425,7 +479,29 @@ function categoryImageUrl(string $imageUrl): string
                         <p>SHOPWAVE was founded in 2025 by beach lovers from Bulacan who believed coastal fashion should be affordable for everyone. We source quality fabrics locally and partner with Filipino artisans.</p>
                         <a href="<?php echo $root; ?>/public/about.php" class="text-link">Read more about us →</a>
                     </div>
-                    <div class="story-visual"></div>
+                    <div class="story-visual"><img src="./images/hero-images/men-image.jpg" alt="Coastal beachwear for men" loading="lazy"></div>
+                </div>
+            </section>
+
+            <section class="hm-section">
+                <div class="hm-head"><h2>Style in the wild</h2><a href="<?php echo $root; ?>/public/shop.php" class="hm-link">Shop the look</a></div>
+                <div class="hm-wild">
+                    <?php
+                    $wildFallback = ['./images/hero-images/women-image.jpg', './images/hero-images/men-image.jpg', './images/hero-images/kid-image.jpg', './images/categories/1.jpg'];
+                    $wildItems = array_slice($featuredProducts, 0, 4);
+                    for ($wi = 0; $wi < 4; $wi++):
+                        $wp = $wildItems[$wi] ?? null;
+                        if ($wp && !empty($wp['image_url'])):
+                    ?>
+                        <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo (int)$wp['id']; ?>" class="hm-wild-tile">
+                            <img src="<?php echo htmlspecialchars($wp['image_url']); ?>" alt="<?php echo htmlspecialchars($wp['name']); ?>" loading="lazy">
+                            <span><?php echo htmlspecialchars($wp['name']); ?></span>
+                        </a>
+                    <?php else: ?>
+                        <a href="<?php echo $root; ?>/public/shop.php" class="hm-wild-tile">
+                            <img src="<?php echo $wildFallback[$wi]; ?>" alt="Shop SHOPWAVE" loading="lazy">
+                        </a>
+                    <?php endif; endfor; ?>
                 </div>
             </section>
 
@@ -643,6 +719,7 @@ function categoryImageUrl(string $imageUrl): string
                 </div>
                 <div class="footer-bottom">
                     <p>&copy; <?php echo date('Y'); ?> SHOPWAVE. All rights reserved. Made with Love in the Philippines 🇵🇭</p>
+                    <p class="pay-methods">We accept GCash · Maya · Cards · Cash on delivery</p>
                 </div>
             </div>
         </footer>

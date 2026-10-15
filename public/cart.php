@@ -141,10 +141,18 @@ function timeAgo(string $dt): string
             </div>
         </nav>
 
+        <div class="announce-bar">Free shipping on orders over ₱1,000 · Cash on delivery available · 30-day returns</div>
         <header class="header">
             <div class="header-main">
                 <div class="header-inner">
                     <a href="<?php echo $root; ?>/index.php" class="logo">SHOPWAVE</a>
+                    <nav class="nav-categories" aria-label="Categories">
+                        <a href="<?php echo $root; ?>/public/shop.php">New in</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3">Kids</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?sale=1" class="nav-sale">Sale</a>
+                    </nav>
                     <div class="header-gap"></div>
                     <div class="actions">
                         <form action="<?php echo $root; ?>/public/shop.php" method="GET" class="search-wrapper desktop-search">
@@ -269,8 +277,8 @@ function timeAgo(string $dt): string
                 <?php else: ?>
                     <div class="cart-header">
                         <div class="cart-header-left">
-                            <h1>Shopping Cart</h1>
-                            <span class="item-count">(<?php echo count($cartItems); ?>)</span>
+                            <h1>Your cart</h1>
+                            <span class="item-count"><?php echo count($cartItems); ?> <?php echo count($cartItems) === 1 ? 'item' : 'items'; ?></span>
                         </div>
                         <button class="cart-clear-all" type="button" data-action="clear-all">
                             <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
@@ -367,11 +375,11 @@ function timeAgo(string $dt): string
 
                                         <div class="item-price-section">
                                             <?php if (!empty($item['discount_price']) && $item['discount_price'] < $item['price']): ?>
-                                                <span class="item-price">P<?php echo number_format($item['discount_price'], 2); ?></span>
-                                                <span class="item-price-original">P<?php echo number_format($item['price'], 2); ?></span>
+                                                <span class="item-price">₱<?php echo number_format($item['discount_price'], 2); ?></span>
+                                                <span class="item-price-original">₱<?php echo number_format($item['price'], 2); ?></span>
                                                 <span class="item-price-off">-<?php echo round((($item['price'] - $item['discount_price']) / $item['price']) * 100); ?>% off</span>
                                             <?php else: ?>
-                                                <span class="item-price">P<?php echo number_format($item['price'], 2); ?></span>
+                                                <span class="item-price">₱<?php echo number_format($item['price'], 2); ?></span>
                                             <?php endif; ?>
                                         </div>
 
@@ -406,7 +414,7 @@ function timeAgo(string $dt): string
 
                                     <div class="item-subtotal">
                                         <span class="subtotal-label">Subtotal</span>
-                                        <span class="subtotal-amount">P<?php echo number_format($item['subtotal'], 2); ?></span>
+                                        <span class="subtotal-amount">₱<?php echo number_format($item['subtotal'], 2); ?></span>
                                     </div>
 
                                     <div class="item-actions">
@@ -414,7 +422,7 @@ function timeAgo(string $dt): string
                                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                                 <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z" />
                                             </svg>
-                                            View
+                                            View product
                                         </a>
                                         <button class="item-remove" type="button" title="Remove item"
                                             data-action="remove"
@@ -427,6 +435,14 @@ function timeAgo(string $dt): string
                                 </div>
                             <?php endforeach; ?>
 
+                            <?php if ($shipping > 0 && $subtotal < 1000): ?>
+                                <div class="shipping-promo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#fb923c">
+                                        <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+                                    </svg>
+                                    Add ₱<?php echo number_format(1000 - $subtotal, 2); ?> more for FREE shipping!
+                                </div>
+                                <?php endif; ?>
                             <div class="edit-mode-bar" id="editModeBar" style="display:none;">
                                 <label class="select-all-wrap">
                                     <input type="checkbox" id="selectAllChk">
@@ -465,10 +481,10 @@ function timeAgo(string $dt): string
                                                     <h3 class="suggested-card-name"><?php echo htmlspecialchars($p['name']); ?></h3>
                                                     <div class="suggested-card-price">
                                                         <?php if (!empty($p['discount_price']) && $p['discount_price'] < $p['price']): ?>
-                                                            <span class="suggested-price-current">P<?php echo number_format($p['discount_price'], 2); ?></span>
-                                                            <span class="suggested-price-original">P<?php echo number_format($p['price'], 2); ?></span>
+                                                            <span class="suggested-price-current">₱<?php echo number_format($p['discount_price'], 2); ?></span>
+                                                            <span class="suggested-price-original">₱<?php echo number_format($p['price'], 2); ?></span>
                                                         <?php else: ?>
-                                                            <span class="suggested-price-current">P<?php echo number_format($p['price'], 2); ?></span>
+                                                            <span class="suggested-price-current">₱<?php echo number_format($p['price'], 2); ?></span>
                                                         <?php endif; ?>
                                                     </div>
                                                 </div>
@@ -485,37 +501,30 @@ function timeAgo(string $dt): string
                             <div class="summary-details">
                                 <div class="summary-row">
                                     <span>Subtotal (<?php echo $totalItems; ?> items)</span>
-                                    <span id="summary-subtotal">P<?php echo number_format($subtotal, 2); ?></span>
+                                    <span id="summary-subtotal">₱<?php echo number_format($subtotal, 2); ?></span>
                                 </div>
                                 <div class="summary-row">
                                     <span>Shipping Fee</span>
                                     <span id="summary-shipping" class="<?php echo $shipping == 0 ? 'free-shipping' : ''; ?>">
-                                        <?php echo $shipping > 0 ? 'P' . number_format($shipping, 2) : 'FREE'; ?>
+                                        <?php echo $shipping > 0 ? '₱' . number_format($shipping, 2) : 'FREE'; ?>
                                     </span>
                                 </div>
-                                <?php if ($shipping > 0 && $subtotal < 1000): ?>
-                                    <div class="shipping-promo">
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#fb923c">
-                                            <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-                                        </svg>
-                                        Add P<?php echo number_format(1000 - $subtotal, 2); ?> more for FREE shipping!
-                                    </div>
-                                <?php endif; ?>
                                 <div class="summary-row">
                                     <span>Tax (12% VAT)</span>
-                                    <span id="summary-tax">P<?php echo number_format($tax, 2); ?></span>
+                                    <span id="summary-tax">₱<?php echo number_format($tax, 2); ?></span>
                                 </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-total">
                                     <span>Total</span>
-                                    <span id="summary-total-amount">P<?php echo number_format($total, 2); ?></span>
+                                    <span id="summary-total-amount">₱<?php echo number_format($total, 2); ?></span>
                                 </div>
                             </div>
+                            <div class="delivery-estimate">Estimated delivery: 2 to 5 business days</div>
                             <a href="<?php echo $root; ?>/public/checkout.php" class="btn-checkout">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                     <path d="M440-183v-274L200-596v274l240 139Zm80 0 240-139v-274L520-457v274Zm-40 92L160-252q-19-11-29.5-29T120-321v-318q0-22 10.5-40t29.5-29l320-184q19-11 40-11t40 11l320 184q19 11 29.5 29t10.5 40v318q0 22-10.5 40T880-252L560-91q-19 11-40 11t-40-11Z" />
                                 </svg>
-                                Proceed to Checkout
+                                Checkout
                             </a>
                             <div class="secure-checkout">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#22c55e">
@@ -533,7 +542,7 @@ function timeAgo(string $dt): string
             <div class="sticky-checkout-bar" id="stickyBar">
                 <div class="sticky-total-info">
                     <span class="sticky-total-label">Total</span>
-                    <span class="sticky-total-amount" id="sticky-total">P<?php echo number_format($total, 2); ?></span>
+                    <span class="sticky-total-amount" id="sticky-total">₱<?php echo number_format($total, 2); ?></span>
                 </div>
                 <a href="<?php echo $root; ?>/public/checkout.php" class="sticky-checkout-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
