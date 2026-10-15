@@ -143,10 +143,18 @@ function categoryImageUrl(string $imageUrl): string
 
 <body>
     <div class="wrapper">
+        <div class="announce-bar">Free shipping on orders over ₱1,000 · Cash on delivery available · 30-day returns</div>
         <header class="header">
             <div class="header-main">
                 <div class="header-inner">
                     <a href="<?php echo $root; ?>/index.php" class="logo">SHOPWAVE</a>
+                    <nav class="nav-categories" aria-label="Categories">
+                        <a href="<?php echo $root; ?>/public/shop.php">New in</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3">Kids</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?sale=1" class="nav-sale">Sale</a>
+                    </nav>
                     <div class="header-gap"></div>
                     <div class="actions">
                         <form action="<?php echo $root; ?>/public/shop.php" method="GET" class="search-wrapper desktop-search">
@@ -275,20 +283,7 @@ function categoryImageUrl(string $imageUrl): string
                         </a>
                         <a href="#featured" class="btn-secondary">View Featured</a>
                     </div>
-                    <div class="hero-stats">
-                        <div class="stat-item">
-                            <strong><?php echo number_format($stats['total_products']); ?>+</strong>
-                            <span>Products</span>
-                        </div>
-                        <div class="stat-item">
-                            <strong><?php echo number_format($stats['total_customers']); ?>+</strong>
-                            <span>Happy Customers</span>
-                        </div>
-                        <div class="stat-item">
-                            <strong><?php echo number_format($stats['total_orders']); ?>+</strong>
-                            <span>Orders Delivered</span>
-                        </div>
-                    </div>
+                    <div class="hero-note">Shop the coastal collection for women, men, and kids.</div>
                 </div>
                 <div class="hero-visual">
                     <div class="hero-collage">
@@ -419,6 +414,59 @@ function categoryImageUrl(string $imageUrl): string
                             </div>
                         </a>
                     <?php endforeach; ?>
+                </div>
+            </section>
+
+            <section class="section-story">
+                <div class="story-card">
+                    <div class="story-text">
+                        <span class="eyebrow">Our story</span>
+                        <h2>Made for the Philippine coast</h2>
+                        <p>SHOPWAVE was founded in 2025 by beach lovers from Bulacan who believed coastal fashion should be affordable for everyone. We source quality fabrics locally and partner with Filipino artisans.</p>
+                        <a href="<?php echo $root; ?>/public/about.php" class="text-link">Read more about us →</a>
+                    </div>
+                    <div class="story-visual"></div>
+                </div>
+            </section>
+
+            <section class="section-faq">
+                <div class="section-header">
+                    <div>
+                        <h2>Shopping questions</h2>
+                        <p>Quick answers about delivery, returns, and payments</p>
+                    </div>
+                </div>
+                <div class="faq-list">
+                    <details class="faq-item">
+                        <summary>How long does delivery take?</summary>
+                        <p>Standard delivery takes 2 to 5 business days. Express delivery takes 1 to 2 business days.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Can I return an item?</summary>
+                        <p>Yes. Returns are accepted within 30 days of delivery.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What payment methods do you accept?</summary>
+                        <p>GCash, Maya, credit and debit cards, and cash on delivery.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>How do I find my size?</summary>
+                        <p>Check the Size Guide in the footer. When in doubt, size up for beachwear comfort.</p>
+                    </details>
+                </div>
+            </section>
+
+            <section class="section-newsletter">
+                <div class="newsletter-card">
+                    <div>
+                        <h2>Get 10% off your first order</h2>
+                        <p>New arrivals and sale alerts, straight to your inbox.</p>
+                    </div>
+                    <form class="newsletter-form" action="<?php echo $root; ?>/public/subscribe.php" method="POST">
+                        <label for="newsletterEmail" class="sr-only">Email address</label>
+                        <input type="email" id="newsletterEmail" name="email" placeholder="Your email address" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
                 </div>
             </section>
 
