@@ -106,6 +106,7 @@ try {
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/adminCss.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin-table-scroll.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
     <style>
         .customers-table { font-size: 0.8rem; }
         .customers-table th { padding: 0.5rem 0.6rem; white-space: nowrap; }

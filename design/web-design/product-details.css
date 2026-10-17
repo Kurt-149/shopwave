@@ -2137,3 +2137,5 @@
     .product-detail-top { grid-template-columns: 1fr; gap: 20px; }
     .related-products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* Colour/size options with no stock in the current combination */
+.variant-btn.is-soldout { opacity: 0.45; text-decoration: line-through; }

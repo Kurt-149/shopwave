@@ -3,6 +3,7 @@
 require_once dirname(__DIR__) . '/core/security.php';
 require_once dirname(__DIR__) . '/core/slug-helper.php';
 require_once __DIR__ . '/../authentication/database.php';
+require_once __DIR__ . '/../core/variant-stock.php';
 
 $csrfToken = generateCsrfToken();
 $pdo = getPdo();
@@ -70,6 +71,11 @@ try {
     }, array_filter($allVariants, fn($v) => $v['type'] === 'color')));
 
     $product['sizes'] = array_values(array_column(array_filter($allVariants, fn($v) => $v['type'] === 'size'), 'value'));
+
+    // Stock per colour/size when the product keeps it that way; null otherwise.
+    $product['variant_stock'] = vsProductUsesVariantStock($pdo, (int) $product['id'])
+        ? array_map(fn($r) => ['color' => $r['color'], 'size' => $r['size'], 'stock' => (int) $r['stock']], vsLoadCombos($pdo, (int) $product['id']))
+        : null;
 
     $colorOverflow = count($product['colors']) > 5;
     $sizeOverflow  = count($product['sizes']) > 6;

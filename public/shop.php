@@ -52,6 +52,50 @@ function timeAgo(string $dt): string
     if ($d->i) return $d->i  . ' min'   . ($d->i  > 1 ? 's' : '') . ' ago';
     return 'Just now';
 }
+
+function renderShopCard(array $product, string $root, bool $soldOut): string
+{
+    $id   = (int)$product['id'];
+    $url  = $root . '/public/product-details.php?id=' . $id;
+    $name = htmlspecialchars($product['name']);
+    $cat  = htmlspecialchars($product['category_name'] ?? 'Uncategorized');
+    $price = (float)$product['price'];
+    $disc  = (float)($product['discount_price'] ?? 0);
+    $hasDiscount = $disc > 0 && $disc < $price;
+    $now = $hasDiscount ? $disc : $price;
+    $pct = $hasDiscount ? (int)round(($price - $disc) / $price * 100) : 0;
+    $stock = (int)($product['stock'] ?? 0);
+    $ratingCount = (int)($product['rating_count'] ?? 0);
+    $avg = (float)($product['avg_rating'] ?? 0);
+
+    if ($soldOut) {
+        $stockHtml = '<span class="shop-stock out">Sold Out</span>';
+    } elseif ($stock > 10) {
+        $stockHtml = '<span class="shop-stock in">In Stock (' . $stock . ')</span>';
+    } else {
+        $stockHtml = '<span class="shop-stock low">Low Stock (' . $stock . ')</span>';
+    }
+
+    $ratingHtml = $ratingCount > 0
+        ? '<span class="shop-card-rating rated">★ ' . number_format($avg, 1) . ' (' . $ratingCount . ')</span>'
+        : '<span class="shop-card-rating">No ratings yet</span>';
+
+    $media = !empty($product['image_url'])
+        ? '<img src="' . htmlspecialchars($product['image_url']) . '" alt="' . $name . '" loading="lazy">'
+        : '<div class="shop-placeholder">No image</div>';
+    $save = $pct > 0 ? '<span class="shop-save">Save ' . $pct . '%</span>' : '';
+    $was = $hasDiscount ? '<span class="shop-price-was">P' . number_format($price, 2) . '</span>' : '';
+
+    return '<article class="shop-card' . ($soldOut ? ' is-sold' : '') . '">'
+        . '<a href="' . $url . '" class="shop-card-media">' . $save . $media . '</a>'
+        . '<div class="shop-card-body">'
+        . '<span class="shop-card-cat">' . $cat . '</span>'
+        . '<a href="' . $url . '" class="shop-card-name">' . $name . '</a>'
+        . $ratingHtml
+        . '<div class="shop-card-price"><span class="shop-price-now">P' . number_format($now, 2) . '</span>' . $was . '</div>'
+        . $stockHtml
+        . '</div></article>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,15 +139,23 @@ function timeAgo(string $dt): string
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/shop.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/shop-breadcrumbs.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 
 <body>
     <div class="wrapper">
 
+        <div class="announce-bar">Free shipping on orders over ₱1,000 · Cash on delivery available · 30-day returns</div>
         <header class="header">
             <div class="header-main">
                 <div class="header-inner">
                     <a href="<?php echo $root; ?>/index.php" class="logo">SHOPWAVE</a>
+                    <nav class="nav-categories" aria-label="Categories">
+                        <a href="<?php echo $root; ?>/public/shop.php">New in</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3">Kids</a>
+                    </nav>
                     <div class="header-gap"></div>
                     <div class="actions">
                         <form action="<?php echo $root; ?>/public/shop.php" method="GET" class="search-wrapper desktop-search">
@@ -226,9 +278,17 @@ function timeAgo(string $dt): string
                     <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="currentColor">
                         <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Z" />
                     </svg>
-                    All Products
+                    All products
                 </h1>
+                <span class="shop-count"><?php echo (int)$total_products; ?> <?php echo (int)$total_products === 1 ? 'product' : 'products'; ?></span>
             </div>
+
+            <nav class="shop-chips" aria-label="Filter by category">
+                <a href="<?php echo $root; ?>/public/shop.php" class="shop-chip <?php echo empty($category) ? 'active' : ''; ?>">All</a>
+                <?php foreach ($categories as $cat): ?>
+                    <a href="<?php echo $root; ?>/public/shop.php?category=<?php echo (int)$cat['id']; ?>" class="shop-chip <?php echo ($category ?? 0) === (int)$cat['id'] ? 'active' : ''; ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
+                <?php endforeach; ?>
+            </nav>
 
             <div class="shop-controls">
                 <button class="filter-toggle-btn <?php echo $hasActiveFilters ? 'has-filters open' : ''; ?>" id="filterToggleBtn" type="button">
@@ -331,77 +391,7 @@ function timeAgo(string $dt): string
 
                     <?php if (!empty($available_products)): ?>
                         <div class="products-grid">
-                            <?php foreach ($available_products as $product): ?>
-                                <div class="product-card">
-                                    <?php if (($product['discount_price'] ?? 0) > 0): ?>
-                                        <div class="product-badge sale-badge">SALE</div>
-                                    <?php endif; ?>
-                                    <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>" class="product-image-link">
-                                        <div class="product-image">
-                                            <?php if (!empty($product['image_url'])): ?>
-                                                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
-                                            <?php else: ?>
-                                                <div class="product-placeholder">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="currentColor">
-                                                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z" />
-                                                    </svg>
-                                                    <span>No Image</span>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </a>
-                                    <div class="product-info">
-                                        <span class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?></span>
-                                        <h3 class="product-name">
-                                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>" class="product-name-link">
-                                                <?php echo htmlspecialchars($product['name']); ?>
-                                            </a>
-                                        </h3>
-                                        <?php if (!empty($product['brand'])): ?>
-                                            <div class="product-brand">Brand: <?php echo htmlspecialchars($product['brand']); ?></div>
-                                        <?php endif; ?>
-                                        <div class="stock-wrapper">
-                                            <span class="stock-badge <?php echo ($product['stock'] ?? 0) > 10 ? 'in-stock' : 'low-stock'; ?>">
-                                                <?php
-                                                $stock = $product['stock'] ?? 0;
-                                                if ($stock > 10) echo 'In Stock (' . $stock . ')';
-                                                else echo 'Low Stock (' . $stock . ')';
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div class="product-price-section">
-                                            <div class="product-price">
-                                                <?php if (($product['discount_price'] ?? 0) > 0): ?>
-                                                    <span class="price-current">P<?php echo number_format($product['discount_price'], 2); ?></span>
-                                                    <span class="price-original">P<?php echo number_format($product['price'], 2); ?></span>
-                                                <?php else: ?>
-                                                    <span class="price-current">P<?php echo number_format($product['price'], 2); ?></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="quick-add-btn"
-                                                onclick="addToCart(<?php echo $product['id']; ?>, this)"
-                                                data-product-id="<?php echo $product['id']; ?>"
-                                                data-stock="<?php echo $product['stock'] ?? 0; ?>"
-                                                title="Quick Add to Cart">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                                    <path d="M440-600v-120H320v-80h120v-120h80v120h120v80H520v120h-80ZM280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Z" />
-                                                </svg>
-                                                Quick Add
-                                            </button>
-                                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>"
-                                                class="view-btn"
-                                                title="View Product Details">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z" />
-                                                </svg>
-                                                View
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                            <?php foreach ($available_products as $product): echo renderShopCard($product, $root, false); endforeach; ?>
                         </div>
                     <?php endif; ?>
 
@@ -410,67 +400,7 @@ function timeAgo(string $dt): string
                             <h2 class="filter-section-title">Sold Out Items</h2>
                         <?php endif; ?>
                         <div class="products-grid">
-                            <?php foreach ($soldout_products as $product): ?>
-                                <div class="product-card">
-                                    <?php if (($product['discount_price'] ?? 0) > 0): ?>
-                                        <div class="product-badge sale-badge">SALE</div>
-                                    <?php endif; ?>
-                                    <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>" class="product-image-link">
-                                        <div class="product-image">
-                                            <?php if (!empty($product['image_url'])): ?>
-                                                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
-                                            <?php else: ?>
-                                                <div class="product-placeholder">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="currentColor">
-                                                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z" />
-                                                    </svg>
-                                                    <span>No Image</span>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </a>
-                                    <div class="product-info">
-                                        <span class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?></span>
-                                        <h3 class="product-name">
-                                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>" class="product-name-link">
-                                                <?php echo htmlspecialchars($product['name']); ?>
-                                            </a>
-                                        </h3>
-                                        <?php if (!empty($product['brand'])): ?>
-                                            <div class="product-brand">Brand: <?php echo htmlspecialchars($product['brand']); ?></div>
-                                        <?php endif; ?>
-                                        <div class="stock-wrapper">
-                                            <span class="stock-badge out-of-stock">Out of Stock</span>
-                                        </div>
-                                        <div class="product-price-section">
-                                            <div class="product-price">
-                                                <?php if (($product['discount_price'] ?? 0) > 0): ?>
-                                                    <span class="price-current">P<?php echo number_format($product['discount_price'], 2); ?></span>
-                                                    <span class="price-original">P<?php echo number_format($product['price'], 2); ?></span>
-                                                <?php else: ?>
-                                                    <span class="price-current">P<?php echo number_format($product['price'], 2); ?></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <div class="product-actions">
-                                            <button class="quick-add-btn out-of-stock" disabled>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                                    <path d="M440-600v-120H320v-80h120v-120h80v120h120v80H520v120h-80ZM280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Z" />
-                                                </svg>
-                                                Sold Out
-                                            </button>
-                                            <a href="<?php echo $root; ?>/public/product-details.php?id=<?php echo $product['id']; ?>"
-                                                class="view-btn"
-                                                title="View Product Details">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z" />
-                                                </svg>
-                                                View
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                            <?php foreach ($soldout_products as $product): echo renderShopCard($product, $root, true); endforeach; ?>
                         </div>
                     <?php endif; ?>
 
@@ -515,10 +445,20 @@ function timeAgo(string $dt): string
                     </div>
                 <?php endif; ?>
             </div>
-              <footer class="footer" style="background: #f8fafc; color: #1e293b; padding: 2rem 0; margin-top: 3rem; border-top: 1px solid #e2e8f0;">
-            <div style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; text-align: center;">
-                <p style="color: #1e293b;">&copy; <?php echo date('Y'); ?> SHOPWAVE. All rights reserved.</p>
+              <footer class="shop-footer-wrap">
+            <div class="shop-footer">
+                <div>
+                    <h4>Shop</h4>
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=<?php echo (int)$cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
+                    <?php endforeach; ?>
+                </div>
+                <div>
+                    <h4>Payments</h4>
+                    <span>Cash on delivery, GCash, bank transfer, cards</span>
+                </div>
             </div>
+            <p class="shop-copy">&copy; <?php echo date('Y'); ?> SHOPWAVE. All rights reserved.</p>
         </footer>
 
         </div>
@@ -530,6 +470,7 @@ function timeAgo(string $dt): string
             <div class="rate-limit-fill" id="rateLimitProgress" style="width: 0%;"></div>
         </div>
     </div>
+    <script src="<?php echo asset('design/csrf-fetch.js'); ?>"></script>
     <script src="<?php echo asset('design/toast.js'); ?>"></script>
     <script src="<?php echo asset('design/item-count.js'); ?>"></script>
     <script>window.APP_ROOT = '<?php echo $root; ?>';</script>

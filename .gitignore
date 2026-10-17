@@ -7,3 +7,5 @@ backups/
 *.sql
 vendor/
 node_modules/
+!backend/migrations/
+!backend/migrations/*.sql

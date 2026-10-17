@@ -1,0 +1,364 @@
+/* ShopWave account page, v2 redesign. Loads after me-page.css and before shopwave-theme.css.
+   Layout hooks (classes, ids, data) are unchanged; this file restyles them. */
+
+/* ---- Identity block ---- */
+.profile-sidebar .user-info-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 4px 4px 0;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: center;
+    text-align: left;
+}
+.profile-sidebar .user-avatar { grid-column: 1; grid-row: 1 / span 3; width: 64px; height: 64px; }
+.profile-sidebar .user-avatar svg { width: 64px; height: 64px; }
+.profile-sidebar .user-name,
+.profile-sidebar .user-email,
+.profile-sidebar .user-joined { grid-column: 2; margin: 0; text-align: left; }
+.profile-sidebar .user-info-card .user-name { font-family: var(--sw-serif); font-size: 22px; font-weight: 500; color: var(--sw-ocean-deep); }
+.profile-sidebar .user-email { font-size: 14px; color: var(--sw-muted); }
+.profile-sidebar .user-joined { font-size: 13px; color: var(--sw-muted); }
+
+/* ---- Sidebar navigation: quiet list with one clear active state ---- */
+.profile-nav { background: transparent; border: none; box-shadow: none; padding: 0; }
+.profile-nav .nav-item {
+    border-radius: 2px;
+    padding: 11px 14px;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--sw-ink);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.profile-nav .nav-item:hover { background: rgba(11, 58, 91, 0.05); color: var(--sw-ocean); }
+.profile-nav .nav-item.active {
+    background: var(--sw-sand);
+    color: var(--sw-ocean);
+    box-shadow: inset 2px 0 0 var(--sw-ocean);
+}
+.profile-nav .nav-item:focus { outline: none; }
+.profile-nav .nav-item:focus-visible { outline: 2px solid var(--sw-sea); outline-offset: 2px; }
+.profile-nav .nav-divider { height: 1px; background: var(--sw-line); margin: 10px 14px; }
+
+/* One badge colour across the account nav and header cart */
+.profile-nav .badge,
+.header .badge {
+    background: var(--sw-coral);
+    color: #fff;
+    border-radius: 999px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ---- Section headings ---- */
+.profile-main .section-title,
+.content-section .section-title {
+    font-family: var(--sw-serif);
+    font-weight: 500;
+    font-size: clamp(28px, 3vw, 36px);
+    color: var(--sw-ocean-deep);
+    letter-spacing: -0.01em;
+}
+
+/* ---- Overview: stats as one editorial strip ---- */
+.quick-stats {
+    display: flex;
+    background: #fff;
+    border: 1px solid var(--sw-line);
+    border-radius: 2px;
+    margin: 0 0 32px;
+    overflow: hidden;
+}
+.quick-stats .stat-card {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--sw-line);
+    border-radius: 0;
+    box-shadow: none;
+}
+.quick-stats .stat-card:last-child { border-right: none; }
+.quick-stats .stat-card .stat-icon {
+    background: var(--sw-sand) !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--sw-sand);
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
+.quick-stats .stat-icon svg { fill: var(--sw-ocean); }
+
+/* ---- Overview: account facts as ruled rows ---- */
+.profile-card { background: transparent; border: none; box-shadow: none; padding: 0; }
+.profile-info-row { padding: 16px 0; border-bottom: 1px solid var(--sw-line); }
+.profile-info-row:last-child { border-bottom: none; }
+.profile-info-row .info-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--sw-muted); }
+.profile-info-row .info-value { font-size: 16px; font-weight: 600; color: var(--sw-ink); }
+
+/* ---- Order tabs (status filters inside Orders) ---- */
+.order-tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid var(--sw-line);
+    margin: 0 0 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.order-tabs::-webkit-scrollbar { display: none; }
+.order-tab {
+    padding: 10px 0 12px;
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    color: var(--sw-muted);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+.order-tab:hover { color: var(--sw-ocean); }
+.order-tab.active { color: var(--sw-ocean); border-bottom-color: var(--sw-ocean); font-weight: 600; }
+.order-tab:focus-visible { outline: 2px solid var(--sw-sea); outline-offset: 2px; }
+
+/* ---- Order cards ---- */
+.order-card {
+    background: #fff;
+    border: 1px solid var(--sw-line);
+    border-radius: 2px;
+    box-shadow: none;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.order-header { background: transparent; border-bottom: none; padding: 18px 20px 0; }
+.order-card .order-id {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 14px;
+    color: var(--sw-ink);
+    letter-spacing: 0.02em;
+}
+.order-date { font-size: 13px; color: var(--sw-muted); }
+.order-status { border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+.order-status.status-pending { background: #f8ecd6; color: #7a5312; }
+.order-status.status-shipped { background: #dff0ee; color: #25615a; }
+.order-status.status-delivered { background: #e3f1ee; color: #2d6e66; }
+.order-status.status-rejected { background: #f8e6dc; color: #9a3d22; }
+
+/* Progress timeline: Placed, Shipped, Delivered (dots and connectors are real elements) */
+.order-timeline {
+    list-style: none;
+    display: flex;
+    margin: 18px 20px 0;
+    padding: 0;
+}
+.order-timeline li {
+    flex: 1 1 0;
+    position: relative;
+    padding-top: 22px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sw-muted);
+}
+.order-timeline .tl-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--sw-line);
+}
+.order-timeline .tl-line {
+    position: absolute;
+    top: 5px;
+    left: 18px;
+    right: 6px;
+    height: 2px;
+    background: var(--sw-line);
+}
+.order-timeline li:last-child .tl-line { display: none; }
+.order-timeline li.done .tl-dot,
+.order-timeline li.done .tl-line { background: var(--sw-sea); border-color: var(--sw-sea); }
+.order-timeline li.done,
+.order-timeline li.current { color: var(--sw-ink); }
+.order-timeline li.current .tl-dot {
+    background: var(--sw-ocean);
+    border-color: var(--sw-ocean);
+    box-shadow: 0 0 0 4px rgba(11, 58, 91, 0.12);
+}
+
+.order-items { padding: 16px 20px; }
+.order-footer { border-top: 1px solid var(--sw-line); background: transparent; padding: 14px 20px; }
+.order-card .order-total { font-family: var(--sw-serif); font-size: 20px; color: var(--sw-ocean-deep); }
+.btn-review {
+    background: var(--sw-ocean);
+    color: var(--sw-sand);
+    border: 1px solid var(--sw-ocean);
+    border-radius: 2px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+.btn-review:hover { background: var(--sw-ocean-deep); }
+
+/* ---- Edit profile: two-column form on desktop ---- */
+.edit-profile-card { background: transparent; border: none; box-shadow: none; padding: 0; }
+.edit-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+}
+.edit-form .profile-picture-upload,
+.edit-form .form-divider,
+.edit-form > p,
+.edit-form .form-actions { grid-column: 1 / -1; }
+.edit-form .form-group input { width: 100%; box-sizing: border-box; }
+.edit-form .form-actions { justify-content: flex-end; }
+
+/* ---- Mobile ---- */
+@media (max-width: 900px) {
+    .profile-nav {
+        display: flex;
+        overflow-x: auto;
+        gap: 6px;
+        scrollbar-width: none;
+    }
+    .profile-nav::-webkit-scrollbar { display: none; }
+    .profile-nav .nav-divider { display: none; }
+    .profile-nav .nav-item { flex: 0 0 auto; white-space: nowrap; }
+    .quick-stats { flex-direction: column; }
+    .quick-stats .stat-card { border-right: none; border-bottom: 1px solid var(--sw-line); }
+    .quick-stats .stat-card:last-child { border-bottom: none; }
+}
+
+@media (max-width: 640px) {
+    .edit-form { grid-template-columns: 1fr; }
+    .order-timeline li { font-size: 10px; letter-spacing: 0.02em; }
+    .order-header { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ---- Final overrides: the older responsive blocks in me-page.css reset these on small screens ---- */
+.profile-main .section-title { font-family: var(--sw-serif) !important; }
+.order-card .btn-review {
+    background: var(--sw-ocean) !important;
+    color: var(--sw-sand) !important;
+    border: 1px solid var(--sw-ocean) !important;
+    font-size: 14px !important;
+    padding: 10px 18px !important;
+    border-radius: 2px !important;
+}
+.order-card .btn-review:hover { background: var(--sw-ocean-deep) !important; }
+@media (max-width: 900px) {
+    .profile-nav .nav-item span { display: inline !important; font-size: 14px; }
+}
+
+/* Keep the columns inside the screen on phones so cards never run past the right edge */
+@media (max-width: 900px) {
+    .profile-dashboard,
+    .profile-sidebar,
+    .profile-main,
+    .profile-main .content-section,
+    .order-card { min-width: 0; max-width: 100%; box-sizing: border-box; }
+    .profile-main { width: 100%; }
+}
+
+/* Timeline colours win over older generic span rules in me-page.css */
+.order-card .order-timeline .tl-dot { background: #fff !important; border-color: var(--sw-line) !important; }
+.order-card .order-timeline .tl-line { background: var(--sw-line) !important; }
+.order-card .order-timeline li.done .tl-dot,
+.order-card .order-timeline li.done .tl-line { background: var(--sw-sea) !important; border-color: var(--sw-sea) !important; }
+.order-card .order-timeline li.current .tl-dot { background: var(--sw-ocean) !important; border-color: var(--sw-ocean) !important; }
+
+/* Edit form fills the card; upload button uses the brand ocean */
+.edit-profile-card .edit-form { max-width: none; width: 100%; }
+.edit-profile-card .upload-btn {
+    background: var(--sw-ocean) !important;
+    color: var(--sw-sand) !important;
+    border: 1px solid var(--sw-ocean) !important;
+    border-radius: 2px !important;
+}
+.edit-profile-card .upload-btn:hover { background: var(--sw-ocean-deep) !important; }
+
+/* Space the header search from the account links */
+.header .actions { gap: 14px; }
+.header .actions > a,
+.header .actions > .icon { margin-left: 0; }
+
+/* ---- My Reviews: cards, product link, clear actions ---- */
+#reviewsList .review-card {
+    background: #fff;
+    border: 1px solid var(--sw-line);
+    border-radius: 2px;
+    box-shadow: none;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+}
+#reviewsList .review-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+#reviewsList .review-date { font-size: 13px; color: var(--sw-muted); }
+#reviewsList .star.filled { color: #d99a1e; }
+.rv-edited {
+    margin-left: 10px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sw-muted);
+}
+#reviewsList .rv-product-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--sw-line);
+    color: var(--sw-ink);
+    text-decoration: none;
+}
+#reviewsList .rv-product-link img { width: 52px; height: 52px; object-fit: cover; border-radius: 2px; background: var(--sw-sand); flex: 0 0 auto; }
+#reviewsList .rv-product-link strong { font-family: var(--sw-serif); font-weight: 500; font-size: 17px; }
+#reviewsList .rv-product-link:hover strong { color: var(--sw-ocean); text-decoration: underline; text-underline-offset: 3px; }
+#reviewsList .rv-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+#reviewsList .rv-actions { display: flex; gap: 8px; margin-left: auto; }
+.rv-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 14px;
+    border: 1px solid var(--sw-line);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--sw-ink);
+    font: 600 13px/1 var(--sw-sans);
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.rv-btn:hover { border-color: var(--sw-ocean); color: var(--sw-ocean); }
+.rv-btn:focus-visible { outline: 2px solid var(--sw-sea); outline-offset: 2px; }
+.rv-btn-primary { background: var(--sw-ocean); border-color: var(--sw-ocean); color: var(--sw-sand); }
+.rv-btn-primary:hover { background: var(--sw-ocean-deep); border-color: var(--sw-ocean-deep); color: var(--sw-sand); }
+.rv-btn-danger:hover { border-color: #b9482a; color: #b9482a; }
+.rv-note { font-size: 13px; color: var(--sw-muted); }
+#reviewsList .review-header { border-bottom: none; padding-bottom: 0; }
+#reviewsList .review-text { margin-top: 0; }
+@media (max-width: 640px) {
+    #reviewsList .review-card { padding: 16px; }
+    #reviewsList .rv-footer { flex-direction: column; align-items: stretch; }
+    #reviewsList .rv-actions { margin-left: 0; }
+    #reviewsList .rv-btn { justify-content: center; }
+}

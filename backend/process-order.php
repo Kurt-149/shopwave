@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../core/api-init.php';
 require_once __DIR__ . '/../authentication/database.php';
 require_once dirname(__DIR__) . '/core/security.php';
+require_once dirname(__DIR__) . '/core/variant-stock.php';
 
 $pdo = getPdo();
 header('Content-Type: application/json');
@@ -81,7 +82,11 @@ try {
         $stmt->execute([$item['product_id']]);
         $product = $stmt->fetch();
 
-        if (!$product || $product['stock'] < $item['quantity']) {
+        $availability = $product
+            ? vsAvailability($pdo, (int) $item['product_id'], (int) $product['stock'], vsNormalize($item['selected_color'] ?? ''), vsNormalize($item['selected_size'] ?? ''), true)
+            : ['available' => 0, 'error' => 'Product not found'];
+
+        if (!$product || $availability['error'] !== null || $availability['available'] < $item['quantity']) {
             $pdo->rollBack();
             echo json_encode([
                 'success' => false,
@@ -146,8 +151,7 @@ try {
             $selectedSize
         ]);
 
-        $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-        $stmt->execute([$item['quantity'], $item['product_id']]);
+        vsDeduct($pdo, (int) $item['product_id'], vsNormalize($selectedColor), vsNormalize($selectedSize), (int) $item['quantity']);
     }
 
     if ($checkoutData['source'] === 'cart') {

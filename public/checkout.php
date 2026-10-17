@@ -90,6 +90,7 @@ function timeAgo(string $dt): string
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/shop-breadcrumbs.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/checkout.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 
 <body>
@@ -512,6 +513,7 @@ function timeAgo(string $dt): string
 
         </div>
     </div>
+    <script src="<?php echo asset('design/csrf-fetch.js'); ?>"></script>
     <script src="<?php echo asset('design/toast.js'); ?>"></script>
     <script src="<?php echo asset('design/item-count.js'); ?>"></script>
     <script src="<?php echo asset('design/checkout.js'); ?>"></script>

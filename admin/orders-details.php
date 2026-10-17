@@ -74,6 +74,7 @@ try {
     <title>Order Details - SHOPWAVE Admin</title>
     <link rel="stylesheet" href="<?php echo $root; ?>/design/main-layout.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
     <style>
         .order-items-list {
             display: flex;

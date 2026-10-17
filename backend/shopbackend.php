@@ -46,7 +46,7 @@ try {
     $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM products p WHERE $where_clause");
     $count_stmt->execute($params);
     $total_products = $count_stmt->fetchColumn();
-    $total_pages = ceil($total_products / 12);
+    $total_pages = ceil($total_products / 12); // pagination limits
     $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
     if ($current_page > 1000) $current_page = 1;
     if ($current_page > $total_pages && $total_pages > 0) {
@@ -54,7 +54,7 @@ try {
     }
     $offset = ($current_page - 1) * 12;
     
-    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE $where_clause ORDER BY $order_by LIMIT 12 OFFSET ?");
+    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.status = 'approved') AS avg_rating, (SELECT COUNT(*) FROM reviews r2 WHERE r2.product_id = p.id AND r2.status = 'approved') AS rating_count FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE $where_clause ORDER BY $order_by LIMIT 12 OFFSET ?");
     $stmt->execute(array_merge($params, [$offset]));
     $products = $stmt->fetchAll();
     $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();

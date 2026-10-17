@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../core/api-init.php';
 require_once __DIR__ . '/../authentication/database.php';
 require_once __DIR__ . '/../core/security.php';
+require_once __DIR__ . '/../core/variant-stock.php';
 requireCsrfPost();
 
 header('Content-Type: application/json');
@@ -44,14 +45,11 @@ if (!checkRateLimit('cart_variant_' . $userId, 20, 60)) {
 
 try {
     $pdo = getPdo();
-    $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("SELECT c.id, c.product_id FROM cart c WHERE c.id = ? AND c.user_id = ? FOR UPDATE");
+    $stmt = $pdo->prepare("SELECT product_id FROM cart WHERE id = ? AND user_id = ?");
     $stmt->execute([$cartId, $userId]);
-    $cartItem = $stmt->fetch();
-
-    if (!$cartItem) {
-        $pdo->rollBack();
+    $productId = $stmt->fetchColumn();
+    if ($productId === false) {
         echo json_encode(['success' => false, 'message' => 'Cart item not found']);
         exit;
     }
@@ -62,20 +60,29 @@ try {
             WHERE product_id = ? AND type = 'size' AND value = ?
             LIMIT 1
         ");
-        $stmt->execute([$cartItem['product_id'], $size]);
+        $stmt->execute([$productId, $size]);
         if (!$stmt->fetch()) {
-            $pdo->rollBack();
             echo json_encode(['success' => false, 'message' => 'Invalid size option']);
             exit;
         }
     }
 
-    $pdo->prepare("UPDATE cart SET selected_size = ?, updated_at = NOW() WHERE id = ?")
-        ->execute([$size ?: null, $cartId]);
-
+    $pdo->beginTransaction();
+    $result = vsChangeCartOptions($pdo, $userId, $cartId, null, $size);
+    if (!$result['ok']) {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'message' => $result['message']]);
+        exit;
+    }
     $pdo->commit();
 
-    echo json_encode(['success' => true, 'selected_size' => $size]);
+    echo json_encode([
+        'success' => true,
+        'message' => $result['message'],
+        'merged'  => $result['merged'],
+        'quantity' => $result['quantity'],
+        'selected_color' => $result['selected_color'], 'selected_size' => $result['selected_size'],
+    ]);
 
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();

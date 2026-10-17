@@ -66,6 +66,7 @@ function timeAgo(string $dt): string
     <meta name="csrf-token" content="<?php echo $csrfToken; ?>">
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/product-details.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css')?>">
 </head>
 
 <body>
@@ -107,11 +108,18 @@ function timeAgo(string $dt): string
                 </div>
             </div>
         </nav>
-
+        <div class="announce-bar">Free shipping on orders over ₱1,000 · Cash on delivery available · 30-day returns</div>
         <header class="header">
             <div class="header-main">
                 <div class="header-inner">
                     <a href="<?php echo $root; ?>/index.php" class="logo">SHOPWAVE</a>
+                    <nav class="nav-categories" aria-label="Categories">
+                        <a href="<?php echo $root; ?>/public/shop.php">New in</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3">Kids</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?sale=1" class="nav-sale">Sale</a>
+                    </nav>
                     <div class="header-gap"></div>
                     <div class="actions">
                         <form action="<?php echo $root; ?>/public/shop.php" method="GET" class="search-wrapper desktop-search">
@@ -135,6 +143,7 @@ function timeAgo(string $dt): string
                                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                                     <a href="<?php echo $root; ?>/admin/dashboard.php" class="icon desktop-only" title="Admin">Admin</a>
                                 <?php endif; ?>
+
                                 <a href="<?php echo $root; ?>/public/cart.php" class="icon" title="Cart">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f">
                                         <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Z" />
@@ -718,10 +727,15 @@ function timeAgo(string $dt): string
         </button>
         <img src="" alt="Product full view" id="lightboxImage" onclick="event.stopPropagation()">
     </div>
-    <script>window.APP_ROOT = '<?php echo $root; ?>';</script>
+    <script>
+        window.APP_ROOT = '<?php echo $root; ?>';
+    </script>
     <script src="<?php echo asset('design/notifications.js'); ?>"></script>
     <script src="<?php echo asset('design/toast.js'); ?>"></script>
     <script src="<?php echo asset('design/item-count.js'); ?>"></script>
+    <script>
+        window.VARIANT_STOCK = <?php echo json_encode($product['variant_stock'] ?? null); ?>;
+    </script>
     <script src="<?php echo asset('design/movement/product-details.js'); ?>"></script>
     <script src="<?php echo asset('design/movement/review.js'); ?>"></script>
     <script>

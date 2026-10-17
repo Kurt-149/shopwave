@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../authentication/database.php';
 require_once __DIR__ . '/../core/security.php';
+require_once __DIR__ . '/../core/variant-stock.php';
 $pdo = getPdo();
 
 
@@ -37,7 +38,8 @@ try {
         $product = $stmt->fetch();
 
         if (!$product) { $_SESSION['error'] = 'Product not found'; header('Location: shop.php'); exit; }
-        if ($quantity > $product['stock']) { $_SESSION['error'] = 'Not enough stock available. Available: ' . $product['stock']; header('Location: product-details.php?id=' . $productId); exit; }
+        $buyAvail = vsAvailability($pdo, (int) $productId, (int) $product['stock'], vsNormalize($selectedColor), vsNormalize($selectedSize));
+        if ($buyAvail['error'] !== null || $quantity > $buyAvail['available']) { $_SESSION['error'] = $buyAvail['error'] ?? vsStockMessage((int) $buyAvail['available']); header('Location: product-details.php?id=' . $productId); exit; }
 
         $price = (!empty($product['discount_price']) && floatval($product['discount_price']) < floatval($product['price'])) ? floatval($product['discount_price']) : floatval($product['price']);
         $checkoutItems[] = ['product_id' => $product['product_id'], 'name' => $product['name'], 'price' => $price, 'original_price' => floatval($product['price']), 'discount_price' => !empty($product['discount_price']) ? floatval($product['discount_price']) : null, 'quantity' => $quantity, 'image_url' => $product['image_url'], 'brand' => $product['brand'], 'category_name' => $product['category_name'], 'selected_color' => $selectedColor, 'selected_size' => $selectedSize, 'subtotal' => $price * $quantity];
@@ -52,7 +54,8 @@ try {
         if (empty($rawItems)) { $_SESSION['error'] = 'Your cart is empty'; header('Location: ../public/cart.php'); exit; }
 
         foreach ($rawItems as $item) {
-            if ($item['quantity'] > $item['stock']) { $_SESSION['error'] = $item['name'] . ' has insufficient stock. Available: ' . $item['stock']; header('Location: cart.php'); exit; }
+            $lineAvail = vsAvailability($pdo, (int) $item['product_id'], (int) $item['stock'], vsNormalize($item['selected_color'] ?? ''), vsNormalize($item['selected_size'] ?? ''));
+            if ($lineAvail['error'] !== null || $item['quantity'] > $lineAvail['available']) { $_SESSION['error'] = $item['name'] . ': ' . ($lineAvail['error'] ?? vsStockMessage((int) $lineAvail['available'])); header('Location: cart.php'); exit; }
             $price = (!empty($item['discount_price']) && floatval($item['discount_price']) < floatval($item['price'])) ? floatval($item['discount_price']) : floatval($item['price']);
             $lineSubtotal = $price * $item['quantity'];
             $subtotal += $lineSubtotal;

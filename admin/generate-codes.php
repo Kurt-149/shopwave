@@ -1,6 +1,5 @@
 <?php
-// FIX: Removed session_start() here. init.php loads session-handler.php which
-// starts the session with the correct DB handler and cookie params.
+
 require_once dirname(__DIR__) . '/core/init.php';
 require_once dirname(__DIR__) . '/authentication/database.php';
 

@@ -3,6 +3,7 @@ require_once __DIR__ . '/../core/api-init.php';
 require_once __DIR__ . '/../core/session-handler.php';
 require_once __DIR__ . '/../authentication/database.php';
 require_once __DIR__ . '/../core/security.php';
+require_once __DIR__ . '/../core/variant-stock.php';
 requireCsrfPost();
 
 $pdo = getPdo();
@@ -59,9 +60,17 @@ try {
         exit;
     }
 
-    if ($quantity > $product['stock']) {
+    $availability = vsAvailability($pdo, $productId, (int) $product['stock'], $color, $size, true);
+    if ($availability['error'] !== null) {
         $pdo->rollBack();
-        echo json_encode(['success' => false, 'message' => 'Not enough stock. Only ' . $product['stock'] . ' available']);
+        echo json_encode(['success' => false, 'message' => $availability['error']]);
+        exit;
+    }
+    $available = (int) $availability['available'];
+
+    if ($quantity > $available) {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'message' => vsStockMessage($available)]);
         exit;
     }
 
@@ -79,11 +88,11 @@ try {
 
     if ($existingCart) {
         $newQuantity = $existingCart['quantity'] + $quantity;
-        if ($newQuantity > $product['stock']) {
+        if ($newQuantity > $available) {
             $pdo->rollBack();
             echo json_encode([
                 'success' => false,
-                'message' => 'Cannot add more. You already have ' . $existingCart['quantity'] . ' in cart. Maximum stock: ' . $product['stock']
+                'message' => 'Cannot add more. You already have ' . $existingCart['quantity'] . ' in cart. Only ' . $available . ' available in this colour or size.'
             ]);
             exit;
         }

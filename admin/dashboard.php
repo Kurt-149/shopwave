@@ -66,6 +66,7 @@ try {
     <title>Admin Dashboard - SHOPWAVE</title>
     <link rel="stylesheet" href="<?php echo $root; ?>/design/main-layout.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 
 </head>
 

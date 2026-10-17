@@ -37,6 +37,7 @@ $csrfToken = generateCsrfToken();
     <title>Forgot Password - SHOPWAVE</title>
     <link rel="stylesheet" href="../design/main-layout.css">
     <link rel="stylesheet" href="../design/web-design/loginPage.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
     <style>
         .reset-step {
             overflow: hidden;

@@ -76,7 +76,7 @@ function addToCart(productId, btnEl) {
     const max = parseInt(quantityInput.getAttribute('max'));
 
     if (max <= 0) {
-        showToast('This product is out of stock', 'error');
+        showToast(window.VARIANT_STOCK ? 'Sold out in this colour or size' : 'This product is out of stock', 'error');
         return;
     }
 
@@ -226,6 +226,7 @@ function selectVariant(btn, type, triggerTextId, dropdownId, wrapId) {
     const check = btn.querySelector('.variant-check');
     if (check) check.style.opacity = '1';
     const value = btn.dataset.value;
+    refreshVariantAvailability();
     if (triggerTextId) {
         document.getElementById(triggerTextId).textContent = value;
     }
@@ -393,3 +394,81 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeTimer = setTimeout(applyMobileColorDropdown, 100);
     });
 });
+// ─── Stock per colour and size ───────────────────────────────────────────────
+// window.VARIANT_STOCK is set by product-details.php when the product keeps stock per option.
+// Options with no stock in the current combination are greyed out, and the quantity and
+// buttons follow the selected colour and size.
+function variantStockTotal(color, size) {
+    const rows = window.VARIANT_STOCK;
+    if (!rows) return null;
+    return rows
+        .filter(r => (color === null || r.color === color) && (size === null || r.size === size))
+        .reduce((sum, r) => sum + Number(r.stock), 0);
+}
+
+function refreshVariantAvailability() {
+    const rows = window.VARIANT_STOCK;
+    const qty = document.getElementById('quantity');
+    if (!rows || !qty) return;
+
+    // A product with no stock at all is already handled by the server-rendered sold-out state.
+    if (qty.dataset.totalMax === undefined) qty.dataset.totalMax = qty.getAttribute('max') || '0';
+    if (Number(qty.dataset.totalMax) === 0) return;
+
+    const colorBtns = document.querySelectorAll('.color-btn');
+    const sizeBtns  = document.querySelectorAll('.size-btn');
+    const hasColors = colorBtns.length > 0;
+    const hasSizes  = sizeBtns.length > 0;
+    const color = document.querySelector('.color-btn.selected')?.dataset.value ?? '';
+    const size  = document.querySelector('.size-btn.selected')?.dataset.value ?? '';
+
+    // The option being viewed is never greyed out; the status line explains a sold-out pair.
+    colorBtns.forEach(btn => btn.classList.toggle('is-soldout',
+        !btn.classList.contains('selected') && variantStockTotal(btn.dataset.value, size || null) === 0));
+    sizeBtns.forEach(btn => btn.classList.toggle('is-soldout',
+        !btn.classList.contains('selected') && variantStockTotal(color || null, btn.dataset.value) === 0));
+
+    const addBtn = document.querySelector('.btn-add-cart');
+    const buyBtn = document.querySelector('.btn-buy-now');
+    const status = document.querySelector('.stock-status');
+    const qtyBtns = document.querySelectorAll('.qty-btn');
+    const actionBtns = [addBtn, buyBtn].filter(Boolean);
+    if (addBtn && !addBtn.dataset.label) addBtn.dataset.label = addBtn.innerHTML;
+    if (buyBtn && !buyBtn.dataset.label) buyBtn.dataset.label = buyBtn.innerHTML;
+
+    const colorNeeded = hasColors && !color;
+    const sizeNeeded  = hasSizes && !size;
+    if (colorNeeded || sizeNeeded) {
+        // Not every option is chosen yet: the product total is the limit.
+        qty.max = qty.dataset.totalMax;
+        qty.disabled = false;
+        qtyBtns.forEach(b => b.disabled = false);
+        actionBtns.forEach(b => { b.disabled = false; b.innerHTML = b.dataset.label; });
+        return;
+    }
+
+    const left = variantStockTotal(hasColors ? color : null, hasSizes ? size : null);
+
+    if (left === 0) {
+        qty.max = '0';
+        qty.value = 0;
+        qty.disabled = true;
+        qtyBtns.forEach(b => b.disabled = true);
+        actionBtns.forEach(b => { b.disabled = true; b.innerHTML = 'Sold Out'; });
+        if (status) status.innerHTML = '<span class="out-of-stock">❌ Sold out in this colour or size</span>';
+        return;
+    }
+
+    qty.max = String(left);
+    qty.disabled = false;
+    qtyBtns.forEach(b => b.disabled = false);
+    if (Number(qty.value) > left || Number(qty.value) < 1) qty.value = 1;
+    actionBtns.forEach(b => { b.disabled = false; b.innerHTML = b.dataset.label; });
+    if (status) {
+        status.innerHTML = left > 10
+            ? '<span class="in-stock">In Stock (' + left + ' available)</span>'
+            : '<span class="low-stock">Low Stock — Only ' + left + ' left</span>';
+    }
+}
+
+refreshVariantAvailability();

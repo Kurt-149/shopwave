@@ -68,6 +68,7 @@ $csrfToken = generateCsrfToken();
     <title>Reset Password - SHOPWAVE</title>
     <link rel="stylesheet" href="<?php echo $root; ?>/design/main-layout.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/web-design/loginPage.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 <body>
     <div class="login-wrapper">

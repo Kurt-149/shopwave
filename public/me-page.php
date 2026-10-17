@@ -116,15 +116,26 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     </style>
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/me-page.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/web-design/reviews.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/web-design/me-page-v2.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 
 <body>
     <div class="wrapper">
 
+        <div class="announce-bar">Free shipping on orders over ₱1,000 · Cash on delivery available · 30-day returns</div>
         <header class="header">
             <div class="header-main">
                 <div class="header-inner">
                     <a href="<?php echo $root; ?>/index.php" class="logo">SHOPWAVE</a>
+                    <nav class="nav-categories" aria-label="Categories">
+                        <a href="<?php echo $root; ?>/public/shop.php">New in</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=1">Women</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=2">Men</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?category=3">Kids</a>
+                        <a href="<?php echo $root; ?>/public/shop.php?sale=1" class="nav-sale">Sale</a>
+                    </nav>
                     <div class="header-gap"></div>
                     <div class="actions">
                         <form action="<?php echo $root; ?>/public/shop.php" method="GET" class="search-wrapper desktop-search">
@@ -287,30 +298,11 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                         </a>
 
                         <div class="nav-divider"></div>
-
-                        <a href="#to-ship" class="nav-item" onclick="showSection('to-ship'); return false;">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                <path d="M240-160q-50 0-85-35t-35-85H40v-440q0-33 23.5-56.5T120-800h560v160h120l120 160v200h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85H360q0 50-35 85t-85 35Zm0-80q17 0 28.5-11.5T280-280q0-17-11.5-28.5T240-320q-17 0-28.5 11.5T200-280q0 17 11.5 28.5T240-240ZM120-360h32q17-18 39-29t49-11q27 0 49 11t39 29h272v-360H120v360Zm600 120q17 0 28.5-11.5T760-280q0-17-11.5-28.5T720-320q-17 0-28.5 11.5T680-280q0 17 11.5 28.5T720-240Zm-40-200h170l-90-120h-80v120ZM360-540Z" />
-                            </svg>
-                            <span>To Ship</span>
-                        </a>
-                        <a href="#to-receive" class="nav-item" onclick="showSection('to-receive'); return false;">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                <path d="M440-183v-274L200-596v274l240 139Zm80 0 240-139v-274L520-457v274Zm-80 92L160-252q-19-11-29.5-29T120-321v-318q0-22 10.5-40t29.5-29l280-161q19-11 40-11t40 11l280 161q19 11 29.5 29t10.5 40v318q0 22-10.5 40T800-252L520-91q-19 11-40 11t-40-11ZM240-637l240 139 240-139-240-139-240 139Z" />
-                            </svg>
-                            <span>To Receive</span>
-                        </a>
-                        <a href="#completed" class="nav-item" onclick="showSection('completed'); return false;">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
-                            </svg>
-                            <span>Completed</span>
-                        </a>
                         <a href="#orders" class="nav-item" onclick="showSection('orders'); return false;">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
                                 <path d="M240-80q-50 0-85-35t-35-85v-120h120v-560l60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60v560h120v120q0 50-35 85t-85 35H240Z" />
                             </svg>
-                            <span>All Orders</span>
+                            <span>Orders</span>
                         </a>
 
                         <div class="nav-divider"></div>
@@ -465,6 +457,12 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
                     <section id="section-to-ship" class="content-section">
                         <h1 class="section-title">To Ship</h1>
+                <nav class="order-tabs" aria-label="Filter orders by status">
+                    <a href="#orders" class="order-tab" onclick="showSection('orders'); return false;">All</a>
+                    <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
+                    <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
+                    <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                </nav>
                         <div class="orders-list" id="toShipOrders">
                             <div class="loading">Loading orders...</div>
                         </div>
@@ -472,6 +470,12 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
                     <section id="section-to-receive" class="content-section">
                         <h1 class="section-title">To Receive</h1>
+                <nav class="order-tabs" aria-label="Filter orders by status">
+                    <a href="#orders" class="order-tab" onclick="showSection('orders'); return false;">All</a>
+                    <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
+                    <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
+                    <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                </nav>
                         <div class="orders-list" id="toReceiveOrders">
                             <div class="loading">Loading orders...</div>
                         </div>
@@ -479,6 +483,12 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
                     <section id="section-completed" class="content-section">
                         <h1 class="section-title">Completed Orders</h1>
+                <nav class="order-tabs" aria-label="Filter orders by status">
+                    <a href="#orders" class="order-tab" onclick="showSection('orders'); return false;">All</a>
+                    <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
+                    <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
+                    <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                </nav>
                         <div class="orders-list" id="completedOrders">
                             <div class="loading">Loading orders...</div>
                         </div>
@@ -493,6 +503,12 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 
                     <section id="section-orders" class="content-section">
                         <h1 class="section-title">Order History</h1>
+                <nav class="order-tabs" aria-label="Filter orders by status">
+                    <a href="#orders" class="order-tab" onclick="showSection('orders'); return false;">All</a>
+                    <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
+                    <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
+                    <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                </nav>
                         <div class="orders-list" id="allOrders">
                             <div class="loading">Loading orders...</div>
                         </div>
@@ -575,6 +591,7 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
             <img src="" alt="Profile Image" id="profileLightboxImage">
         </div>
     </div>
+    <script src="<?php echo asset('design/csrf-fetch.js'); ?>"></script>
     <script src="<?php echo asset('design/toast.js'); ?>"></script>
     <script src="<?php echo asset('design/item-count.js'); ?>"></script>
     <script src="<?php echo asset('design/movement/review.js'); ?>"></script>

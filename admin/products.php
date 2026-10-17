@@ -122,6 +122,7 @@ function getPaginationUrl($page, $search, $category)
     <title>Products Management - SHOPWAVE Admin</title>
     <link rel="stylesheet" href="<?php echo $root; ?>/design/main-layout.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
     <style>
         .admin-products-grid {
             display: grid;

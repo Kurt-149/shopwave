@@ -3,8 +3,11 @@ require_once dirname(__DIR__) . '/core/init.php';
 require_once dirname(__DIR__) . '/core/session-handler.php';
 require_once dirname(__DIR__) . '/core/config.php';
 $root = BASE_URL;
+$initialVariantStockRaw = $_POST['variant_stock'] ?? '[]';
+$initialVariantStock = json_decode($initialVariantStockRaw, true) ?: [];
 require_once dirname(__DIR__) . '/authentication/database.php';
 require_once dirname(__DIR__) . '/core/security.php';
+require_once dirname(__DIR__) . '/core/variant-stock.php';
 requireCsrfPost();
 require_once dirname(__DIR__) . '/core/slug-helper.php';
 requireAdmin();
@@ -25,10 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sizes_raw = trim($_POST['sizes'] ?? '');
     $colors_json = $_POST['colors_data'] ?? '[]';
     $colors_data = json_decode($colors_json, true) ?: [];
+    $colorNames = array_values(array_filter(array_map(fn($c) => is_array($c) ? trim($c['name'] ?? '') : '', $colors_data)));
+    $sizeNames  = array_values(array_filter(array_map('trim', explode(',', $sizes_raw))));
+    $combos = vsBuildCombos($colorNames, $sizeNames);
+    $variantStockRows = [];
 
     if (empty($name)) $errors[] = "Product name is required";
     if (empty($price) || !is_numeric($price) || $price <= 0) $errors[] = "Valid price is required";
-    if (empty($stock) || !is_numeric($stock) || $stock < 0) $errors[] = "Valid stock quantity is required";
+    if ($combos) {
+        $variantStock = vsReadSubmittedStock($combos, $_POST['variant_stock'] ?? '[]');
+        if ($variantStock['error'] !== null) $errors[] = $variantStock['error'];
+        else { $variantStockRows = $variantStock['rows']; $stock = $variantStock['total']; }
+    } elseif (empty($stock) || !is_numeric($stock) || $stock < 0) {
+        $errors[] = "Valid stock quantity is required";
+    }
     if (empty($category_id)) $errors[] = "Category is required";
     if (!empty($discount_price) && (!is_numeric($discount_price) || floatval($discount_price) >= floatval($price)))
         $errors[] = "Discount price must be less than regular price";
@@ -109,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->prepare("INSERT INTO product_variants (product_id, type, value, display_order) VALUES (?,?,?,?)")->execute([$newProductId, 'size', $s, $i]);
                 }
             }
+            vsSaveCombos($pdo, (int) $newProductId, $variantStockRows);
             $pdo->commit();
             $_SESSION['success'] = "Product added successfully!";
             header('Location: products.php');
@@ -492,7 +506,7 @@ $suggestedColors = ['Black', 'White', 'Gray', 'Navy', 'Red', 'Blue', 'Green', 'B
                             </div>
 
                             <div class="form-grid">
-                                <div class="form-group">
+                                <div class="form-group" id="singleStockGroup">
                                     <label class="form-label required">Stock Quantity</label>
                                     <input type="number" name="stock" class="form-input" placeholder="0" min="0"
                                         value="<?php echo htmlspecialchars($_POST['stock'] ?? ''); ?>" required>
@@ -590,7 +604,16 @@ $suggestedColors = ['Black', 'White', 'Gray', 'Navy', 'Red', 'Blue', 'Green', 'B
                                 <div class="form-help">Sizes shown as selectable options on the product page</div>
                             </div>
 
-                            <div class="form-actions">
+                                                        <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/variant-stock.css">
+                            <div class="variant-section-title" id="variantStockTitle" hidden>Stock per colour and size</div>
+                            <div class="form-group" id="variantStockBox" hidden>
+                                <div class="form-help">Each colour and size is sold separately. The product total is the sum of these numbers.</div>
+                                <div id="variantStockRows"></div>
+                                <div class="vs-total">Total stock: <strong id="variantStockTotal">0</strong></div>
+                            </div>
+                            <input type="hidden" name="variant_stock" id="variantStockData" value="<?php echo htmlspecialchars($initialVariantStockRaw, ENT_QUOTES); ?>">
+
+<div class="form-actions">
                                 <button type="submit" class="btn btn-primary">Add Product</button>
                                 <a href="products.php" class="btn btn-secondary">Cancel</a>
                             </div>
@@ -606,6 +629,10 @@ $suggestedColors = ['Black', 'White', 'Gray', 'Navy', 'Red', 'Blue', 'Green', 'B
         window.INITIAL_SIZES = [];
     </script>
     <script src="<?php echo $root; ?>/design/admin/product-variants.js"></script>
+    <script>
+        window.INITIAL_VARIANT_STOCK = <?php echo json_encode($initialVariantStock); ?>;
+    </script>
+    <script src="<?php echo $root; ?>/design/admin/variant-stock.js"></script>
     <script src="<?php echo $root; ?>/design/admin/admin.js"></script>
     <script>
         document.getElementById('image-input')?.addEventListener('change', function(e) {

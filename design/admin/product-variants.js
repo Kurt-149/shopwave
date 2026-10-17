@@ -102,6 +102,7 @@ function updateColorsData() {
         image_url: c.serverUrl || ''
     }));
     document.getElementById('colorsData').value = JSON.stringify(data);
+    if (window.renderVariantStockGrid) window.renderVariantStockGrid();
 }
 
 function updateColorChips() {
@@ -164,6 +165,7 @@ function renderSizeTags() {
 }
 
 function updateSizesHidden() {
+    if (window.renderVariantStockGrid) window.renderVariantStockGrid();
     document.getElementById('sizesHidden').value = sizes.join(',');
 }
 

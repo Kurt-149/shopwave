@@ -102,6 +102,7 @@ $page = 'order-success';
     <style>.burger-container,.menu-box,.category-list,.burger-icon{display:none!important}</style>
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/order-success.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 <body>
 

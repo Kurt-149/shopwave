@@ -94,6 +94,7 @@ function timeAgo(string $dt): string
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/shop-breadcrumbs.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('design/web-design/cart.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 
 <body>
@@ -561,7 +562,8 @@ function timeAgo(string $dt): string
             </button>
             <img src="" alt="Product full view" id="cartLightboxImg">
         </div>
-        <script src="<?php echo asset('design/toast.js'); ?>"></script>
+        <script src="<?php echo asset('design/csrf-fetch.js'); ?>"></script>
+    <script src="<?php echo asset('design/toast.js'); ?>"></script>
         <script src="<?php echo asset('design/cart.js'); ?>"></script>
         <script src="<?php echo asset('design/item-count.js'); ?>"></script>
         <script>window.APP_ROOT = '<?php echo $root; ?>';</script>

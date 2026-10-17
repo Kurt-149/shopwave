@@ -1,0 +1,16 @@
+/* Admin: stock per colour and size (variant-stock.js) */
+.vs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 140px;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border, #e2e8f0);
+}
+.vs-head { font-weight: 600; font-size: 0.8rem; color: var(--muted, #64748b); border-bottom-width: 2px; }
+.vs-color, .vs-size { font-size: 0.9rem; color: var(--text, #1e293b); overflow-wrap: anywhere; }
+.vs-input { width: 100%; }
+.vs-total { margin-top: 0.75rem; font-size: 0.9rem; color: var(--text, #1e293b); }
+@media (max-width: 600px) {
+    .vs-row { grid-template-columns: 1fr 1fr 110px; }
+}

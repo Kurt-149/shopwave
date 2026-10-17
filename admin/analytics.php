@@ -110,6 +110,7 @@ try {
     <link rel="stylesheet" href="<?php echo $root; ?>/design/main-layout.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin.css">
     <link rel="stylesheet" href="<?php echo $root; ?>/design/admin/admin-table-scroll.css">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
     <style>
         .grid-2 { gap: 1rem; }
         .grid-2 .card { overflow-x: auto; min-width: 0; }

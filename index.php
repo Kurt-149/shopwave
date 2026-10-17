@@ -158,6 +158,7 @@ function categoryImageUrl(string $imageUrl): string
     <meta name="description" content="Shop the latest fashion trends at SHOPWAVE. Stylish, comfortable, and affordable beachwear with free shipping on orders over ₱1,000!">
     <meta name="keywords" content="fashion, beachwear, clothing, online shopping, Philippines">
     <link rel="stylesheet" href="<?php echo asset('design/main-layout.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('design/shopwave-theme.css'); ?>">
 </head>
 
 <body>
@@ -286,20 +287,17 @@ function categoryImageUrl(string $imageUrl): string
         </div>
 
         <div class="page-body">
-            <section class="hm-hero">
-                <div class="hm-hero-image">
-                    <img src="./images/hero-images/women-image.jpg" alt="Women's beachwear collection" loading="eager">
-                    <span class="hm-hero-caption">Coastal collection</span>
+            <section class="sw-hero">
+                <div class="sw-hero-media">
+                    <img src="./images/hero-images/women-image.jpg" alt="Women's swimwear collection" loading="eager">
                 </div>
-                <div class="hm-hero-row">
-                    <div class="hm-hero-text">
-                        <span class="hm-pill">New season</span>
-                        <h1>Discover your style</h1>
-                        <p>Stylish, comfortable, and affordable beachwear that enhances your confidence. Free shipping on orders over ₱1,000.</p>
-                    </div>
-                    <div class="hm-hero-actions">
-                        <a href="<?php echo $root; ?>/public/shop.php" class="hm-btn hm-btn-primary">Explore collection</a>
-                        <a href="#featured" class="hm-btn hm-btn-outline">View featured</a>
+                <div class="sw-hero-copy">
+                    <p class="sw-eyebrow">New season</p>
+                    <h1>Make waves.<br>Own the moment.</h1>
+                    <p class="sw-lede">Swimwear for sun-soaked days, saltwater skin, and wherever summer takes you.</p>
+                    <div class="sw-actions">
+                        <a href="<?php echo $root; ?>/public/shop.php" class="sw-btn sw-btn-solid">Shop the collection</a>
+                        <a href="#featured" class="sw-btn sw-btn-ghost">See featured</a>
                     </div>
                 </div>
             </section>

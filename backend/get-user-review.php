@@ -28,6 +28,7 @@ try {
             r.rating,
             r.comment,
             r.status,
+            r.edit_count,
             r.created_at,
             COALESCE(p.name, 'Product unavailable') AS product_name,
             p.image_url

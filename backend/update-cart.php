@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../core/api-init.php';
 require_once __DIR__ . '/../authentication/database.php';
 require_once __DIR__ . '/../core/security.php';
+require_once __DIR__ . '/../core/variant-stock.php';
 requireCsrfPost();
 
 header('Content-Type: application/json');
@@ -47,7 +48,7 @@ try {
     $pdo->beginTransaction();
 
     $stmt = $pdo->prepare("
-        SELECT c.id, c.product_id, c.quantity,
+        SELECT c.id, c.product_id, c.quantity, c.selected_color, c.selected_size,
                p.stock, p.price, p.discount_price, p.name, p.status
         FROM cart c
         JOIN products p ON p.id = c.product_id
@@ -74,11 +75,19 @@ try {
         $pdo->prepare("DELETE FROM cart WHERE id = ?")->execute([$cartId]);
         $message = 'Item removed from cart';
     } else {
-        if ($quantity > (int) $cartItem['stock']) {
+        $availability = vsAvailability(
+            $pdo,
+            (int) $cartItem['product_id'],
+            (int) $cartItem['stock'],
+            vsNormalize($cartItem['selected_color']),
+            vsNormalize($cartItem['selected_size']),
+            true
+        );
+        if ($availability['error'] !== null || $quantity > (int) $availability['available']) {
             $pdo->rollBack();
             echo json_encode([
                 'success' => false,
-                'message' => 'Only ' . $cartItem['stock'] . ' available in stock',
+                'message' => $availability['error'] ?? vsStockMessage((int) $availability['available']),
             ]);
             exit;
         }

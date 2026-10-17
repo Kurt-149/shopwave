@@ -34,8 +34,11 @@ function showSection(sectionName) {
     const selected = document.getElementById(`section-${sectionName}`);
     if (selected) selected.classList.add('active');
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    const activeNav = document.querySelector(`[href="#${sectionName}"]`);
+    // Status sub-sections (To Ship, To Receive, Completed) highlight the Orders link
+    const subSectionParent = { 'to-ship': 'orders', 'to-receive': 'orders', 'completed': 'orders' };
+    const activeNav = document.querySelector(`.profile-nav [href="#${subSectionParent[sectionName] || sectionName}"]`);
     if (activeNav) activeNav.classList.add('active');
+    if (selected) selected.querySelectorAll('.order-tab').forEach(t => t.classList.toggle('active', t.getAttribute('href') === `#${sectionName}`));
     loadSectionData(sectionName);
     history.pushState(null, null, `#${sectionName}`);
 }
@@ -132,6 +135,7 @@ function createOrderCard(order) {
                 </div>
                 <span class="order-status status-${order.status}">${capitalizeStatus(order.status)}</span>
             </div>
+            ${renderOrderTimeline(order.status)}
             <div class="order-items">
                 ${itemsHtml}
             </div>
@@ -141,6 +145,14 @@ function createOrderCard(order) {
             </div>
         </div>
     `;
+}
+
+function renderOrderTimeline(status) {
+    if (status === 'rejected') return '';
+    const steps = ['Placed', 'Shipped', 'Delivered'];
+    const level = { pending: 1, processing: 1, shipped: 2, delivered: 3, completed: 3 }[status] || 1;
+    return `<ol class="order-timeline" aria-label="Order progress">${steps.map((label, i) =>
+        `<li class="${i + 1 < level ? 'done' : ''}${i + 1 === level ? ' current' : ''}"><span class="tl-dot"></span><span class="tl-line"></span>${label}</li>`).join('')}</ol>`;
 }
 
 function createOrderItem(item) {
@@ -223,32 +235,40 @@ function createReviewCard(review) {
     const stars = Array.from({ length: 5 }, (_, i) =>
         `<span class="star ${i < rating ? 'filled' : ''}">★</span>`
     ).join('');
+    const productUrl = `product-details.php?id=${encodeURIComponent(review.product_id)}`;
+    const isApproved = review.status === 'approved';
     let statusBadge = '';
     if (review.status === 'pending') statusBadge = '<span class="review-status-pending">Pending Approval</span>';
     if (review.status === 'rejected') statusBadge = '<span class="review-status-rejected">Rejected</span>';
-    let verifiedBadge = '';
-    if (review.verified_purchase) {
-        verifiedBadge = '<span class="verified-badge" style="background: #10b98120; color: #10b981; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; margin-left: 8px;">✓ Purchased</span>';
-    }
+    const isEdited = Number(review.edit_count) > 0;
+    const editedTag = isEdited ? '<span class="rv-edited">Edited</span>' : '';
+    const seeAction = isApproved
+        ? `<a class="rv-btn rv-btn-primary" href="${productUrl}#review-${review.id}">See on product</a>`
+        : '<span class="rv-note">Only approved reviews appear on the product page.</span>';
+    const editAction = isEdited
+        ? ''
+        : `<button type="button" class="rv-btn" onclick="editReview(${review.id})">Edit</button>`;
+    const image = review.image_url
+        ? `<img src="${escapeHtml(review.image_url)}" alt="" class="review-product-image" onerror="this.style.display='none'">`
+        : '';
     return `
         <div class="review-card">
             <div class="review-header">
-                <div class="review-rating">${stars}${statusBadge}</div>
-                <div class="review-actions">
-                    <div class="review-date">${formatDate(review.created_at)}</div>
-                    <button class="btn-view-review" onclick="viewReviewOnProduct(${review.product_id}, ${review.id})">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
-                            <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                        </svg>
-                        View
-                    </button>
+                <div class="review-rating">${stars}${statusBadge}${editedTag}</div>
+                <div class="review-date">${formatDate(review.created_at)}</div>
+            </div>
+            <a class="review-product-name rv-product-link" href="${productUrl}">
+                ${image}
+                <strong>${escapeHtml(review.product_name || 'Unknown Product')}</strong>
+            </a>
+            <div class="review-text">${escapeHtml(review.comment || 'No comment provided')}</div>
+            <div class="rv-footer">
+                ${seeAction}
+                <div class="rv-actions">
+                    ${editAction}
+                    <button type="button" class="rv-btn rv-btn-danger" onclick="deleteReview(${review.id})">Delete</button>
                 </div>
             </div>
-            <div class="review-product-name">
-                ${review.image_url ? `<img src="${escapeHtml(review.image_url)}" alt="${escapeHtml(review.product_name)}" class="review-product-image" onerror="this.style.display='none'">` : ''}
-                <strong>${escapeHtml(review.product_name || 'Unknown Product')}</strong>
-            </div>
-            <div class="review-text">${escapeHtml(review.comment || 'No comment provided')}</div>
         </div>
     `;
 }
