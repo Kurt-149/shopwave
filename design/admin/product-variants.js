@@ -156,7 +156,12 @@ function renderSizeTags() {
     sizes.forEach(v => {
         const tag = document.createElement('span');
         tag.className = 'variant-tag';
-        tag.innerHTML = `${v} <button type="button" onclick="removeSize('${v}')">×</button>`;
+        tag.textContent = v + ' ';
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => removeSize(v));
+        tag.appendChild(removeBtn);
         container.appendChild(tag);
     });
     document.querySelectorAll('#sizeBuilder .suggestion-chip').forEach(chip => {

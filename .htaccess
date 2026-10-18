@@ -20,6 +20,10 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
   Deny from all
 </FilesMatch>
 
+# Block private folders and old debug files
+RewriteEngine On
+RewriteRule ^(storage|stubs|backups|sessions)(/|$) - [F,L]
+RewriteRule ^debug\.php(\.php)?$ - [F,L]
+
 # 4. Disable directory browsing
 Options -Indexes
-

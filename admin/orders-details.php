@@ -47,27 +47,28 @@ try {
 <head>
     <meta name="csrf-token" content="<?php echo htmlspecialchars(function_exists('generateCsrfToken') ? generateCsrfToken() : '', ENT_QUOTES); ?>">
     <script>
-    (function () {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        if (!meta || !meta.content || !window.fetch) return;
-        var token = meta.content, origFetch = window.fetch;
-        window.fetch = function (input, init) {
-            init = init || {};
-            if ((init.method || 'GET').toUpperCase() === 'POST' && init.body !== undefined) {
-                var b = init.body;
-                if (typeof FormData !== 'undefined' && b instanceof FormData) {
-                    if (!b.has('csrf_token')) b.append('csrf_token', token);
-                } else if (typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams) {
-                    if (!b.has('csrf_token')) b.append('csrf_token', token);
-                } else if (typeof b === 'string') {
-                    if (b.indexOf('csrf_token=') === -1) {
-                        init.body = b + (b ? '&' : '') + 'csrf_token=' + encodeURIComponent(token);
+        (function() {
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            if (!meta || !meta.content || !window.fetch) return;
+            var token = meta.content,
+                origFetch = window.fetch;
+            window.fetch = function(input, init) {
+                init = init || {};
+                if ((init.method || 'GET').toUpperCase() === 'POST' && init.body !== undefined) {
+                    var b = init.body;
+                    if (typeof FormData !== 'undefined' && b instanceof FormData) {
+                        if (!b.has('csrf_token')) b.append('csrf_token', token);
+                    } else if (typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams) {
+                        if (!b.has('csrf_token')) b.append('csrf_token', token);
+                    } else if (typeof b === 'string') {
+                        if (b.indexOf('csrf_token=') === -1) {
+                            init.body = b + (b ? '&' : '') + 'csrf_token=' + encodeURIComponent(token);
+                        }
                     }
                 }
-            }
-            return origFetch.call(this, input, init);
-        };
-    })();
+                return origFetch.call(this, input, init);
+            };
+        })();
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -402,7 +403,7 @@ try {
                             <div class="card">
                                 <h2 class="card-title">Update Status</h2>
                                 <form method="POST" action="orders.php">
-<input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(function_exists('generateCsrfToken') ? generateCsrfToken() : '', ENT_QUOTES); ?>">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(function_exists('generateCsrfToken') ? generateCsrfToken() : '', ENT_QUOTES); ?>">
                                     <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                                         <select name="status" class="form-select">

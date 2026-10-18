@@ -11,6 +11,11 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// CSRF token from the page's <meta name="csrf-token"> tag.
+function _csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
 // Resolves backend URL regardless of which page this script is on.
 // APP_ROOT is set by PHP on me-page.php: window.APP_ROOT = '<?php echo $root; ?>';
 function _backendUrl(file) {
@@ -59,7 +64,7 @@ function markAllRead() {
     fetch(_backendUrl('mark-notifications-read.php'), {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _csrfToken() }
     })
     .then(r => r.json())
     .then(data => {
@@ -87,7 +92,7 @@ function markNotifRead(id) {
     fetch(_backendUrl('mark-notifications-read.php'), {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': _csrfToken() },
         body: 'id=' + id
     }).catch(() => {});
 }

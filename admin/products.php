@@ -8,10 +8,11 @@ require_once __DIR__ . '/../core/security.php';
 requireAdmin();
 
 $pdo = getPdo();
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id']) && is_numeric($_POST['delete_id'])) {
+    requireCsrfPost();
     try {
         $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
-        $stmt->execute([$_GET['delete']]);
+        $stmt->execute([(int) $_POST['delete_id']]);
         header('Location: products.php?success=deleted');
         exit;
     } catch (PDOException $e) {
@@ -693,7 +694,11 @@ function getPaginationUrl($page, $search, $category)
                                             </div>
                                             <div class="admin-product-actions">
                                                 <a href="editProducts.php?id=<?php echo $product['id']; ?>" class="admin-btn-edit">Edit</a>
-                                                <a href="products.php?delete=<?php echo $product['id']; ?>" class="admin-btn-delete" onclick="return confirm('Delete this product?')">Delete</a>
+                                                <form method="POST" action="products.php" style="display:inline" onsubmit="return confirm('Delete this product?')">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                    <input type="hidden" name="delete_id" value="<?php echo (int) $product['id']; ?>">
+                                                    <button type="submit" class="admin-btn-delete" style="border:0;background:none;cursor:pointer;font:inherit">Delete</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>

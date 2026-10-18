@@ -51,15 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id']) && is_numeric($_POST['delete_id'])) {
+    requireCsrfPost();
     try {
         $pdo->beginTransaction();
         
         $stmt = $pdo->prepare("UPDATE products SET category_id = NULL WHERE category_id = ?");
-        $stmt->execute([$_GET['delete']]);
+        $stmt->execute([(int) $_POST['delete_id']]);
         
         $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
-        $stmt->execute([$_GET['delete']]);
+        $stmt->execute([(int) $_POST['delete_id']]);
         
         $pdo->commit();
         $success = "Category deleted successfully!";
@@ -244,11 +245,11 @@ try {
                                                         onclick="openEditModal(<?php echo htmlspecialchars(json_encode($category)); ?>)">
                                                         Edit
                                                     </button>
-                                                    <a href="?delete=<?php echo $category['id']; ?>&page=<?php echo $current_page; ?>"
-                                                        class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Delete this category? This will unlink all products in this category.')">
-                                                        Delete
-                                                    </a>
+                                                    <form method="POST" action="?page=<?php echo $current_page; ?>" style="display:inline" onsubmit="return confirm('Delete this category? This will unlink all products in this category.')">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                        <input type="hidden" name="delete_id" value="<?php echo (int) $category['id']; ?>">
+                                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

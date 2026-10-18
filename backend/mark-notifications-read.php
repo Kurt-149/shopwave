@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../core/security.php';
-requireCsrfPost();
 require_once __DIR__ . '/../core/init.php';
 require_once __DIR__ . '/../core/session-handler.php';
 require_once __DIR__ . '/../authentication/database.php';
@@ -16,6 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit;
 }
+
+// Check the CSRF token only after the session is loaded, so it can be compared.
+requireCsrfPost();
 
 $userId = (int) $_SESSION['user_id'];
 $id     = isset($_POST['id']) ? (int) $_POST['id'] : null;

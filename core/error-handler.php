@@ -1,6 +1,5 @@
 <?php
-$isLocalhost = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) || 
-               strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+$isLocalhost = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true);
 
 function shopwaveErrorHandler($errno, $errstr, $errfile, $errline) {
     global $isLocalhost;

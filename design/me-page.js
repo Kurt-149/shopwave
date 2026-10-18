@@ -120,8 +120,19 @@ function createOrderCard(order) {
     const orderNumber = order.order_number || `ORDER-${order.id || 'UNKNOWN'}`;
     let itemsHtml = '';
     if (items.length > 0) {
-        for (let i = 0; i < items.length; i++) {
-            itemsHtml += createOrderItem(items[i]);
+        // Show the first 2 items; the rest sit behind a native <details> toggle to keep cards short.
+        const PREVIEW_COUNT = 2;
+        itemsHtml = items.slice(0, PREVIEW_COUNT).map(createOrderItem).join('');
+        const rest = items.slice(PREVIEW_COUNT);
+        if (rest.length > 0) {
+            itemsHtml += `
+                <details class="order-more">
+                    <summary>
+                        <span class="om-closed">+${rest.length} more item${rest.length > 1 ? 's' : ''}</span>
+                        <span class="om-open">Hide items</span>
+                    </summary>
+                    ${rest.map(createOrderItem).join('')}
+                </details>`;
         }
     } else {
         itemsHtml = '<div class="empty-text">No items in this order</div>';

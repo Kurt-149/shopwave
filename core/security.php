@@ -48,7 +48,13 @@ function validateCsrfToken(string $token): bool
         return false;
     }
 
-    return hash_equals($_SESSION['csrf_token'], $token);
+    if (!hash_equals($_SESSION['csrf_token'], $token)) {
+        return false;
+    }
+
+    // Keep the token alive while the user is active.
+    $_SESSION['csrf_token_expiry'] = time() + 3600;
+    return true;
 }
 
 function checkRateLimit(string $key, int $max_attempts = 5, int $window = 300): bool
@@ -110,6 +116,17 @@ function checkRateLimit(string $key, int $max_attempts = 5, int $window = 300): 
 
 function safeRedirect(string $location, array $allowed = []): void
 {
+    // Reject absolute URLs and protocol-relative URLs outright.
+    $parts = parse_url($location);
+    if ($parts === false || isset($parts['scheme']) || isset($parts['host'])
+        || str_starts_with($location, '//') || str_starts_with($location, '\\')) {
+        if (function_exists('logSecurityEvent')) {
+            logSecurityEvent("Blocked external redirect attempt to: $location", 'WARNING');
+        }
+        header('Location: ../index.php');
+        exit;
+    }
+
     $defaultAllowed = [
         'index.php',
         '../index.php',
@@ -264,6 +281,13 @@ function validateFileUpload(
 
 function logSecurityEvent(string $event, string $level = 'INFO'): void
 {
+    $dir = dirname(__DIR__) . '/storage';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0700, true);
+    }
+    $line = date('c') . ' [' . $level . '] ' . str_replace(["\r", "\n"], ' ', $event)
+          . ' ip=' . ($_SERVER['REMOTE_ADDR'] ?? '-') . "\n";
+    @file_put_contents($dir . '/security.log', $line, FILE_APPEND | LOCK_EX);
 }
 
 function isAjaxRequest(): bool
@@ -274,15 +298,7 @@ function isAjaxRequest(): bool
 
 function getClientIP(): string
 {
-    $headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'];
-    foreach ($headers as $header) {
-        if (!empty($_SERVER[$header])) {
-            $ip = trim(explode(',', $_SERVER[$header])[0]);
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                return $ip;
-            }
-        }
-    }
+    // Forwarded headers are set by the visitor, so they are not trusted here.
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 
@@ -312,12 +328,36 @@ function requireCsrfPost(): void
         return;
     }
     $token = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
-    if (!validateCsrfToken((string) $token)) {
-        http_response_code(403);
+    if (validateCsrfToken((string) $token)) {
+        return;
+    }
+
+    $isAjax = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+           || isset($_SERVER['HTTP_X_CSRF_TOKEN']);
+
+    // The inactivity timeout ended this session, so the token belonged to a session that no longer exists.
+    if (!empty($GLOBALS['sw_session_expired'])) {
+        $message = $GLOBALS['sw_session_expired'] === 'user'
+            ? 'Your session expired after 30 minutes of inactivity. Please log in again.'
+            : 'Your session expired after 30 minutes of inactivity. Please refresh the page and try again.';
+        if (!$isAjax) {
+            if (!headers_sent()) {
+                header('Location: /authentication/login-page.php?error=' . urlencode($message));
+            }
+            exit;
+        }
+        http_response_code(401);
         if (!headers_sent()) {
             header('Content-Type: application/json');
         }
-        echo json_encode(['success' => false, 'message' => 'Security validation failed. Please refresh the page and try again.']);
+        echo json_encode(['success' => false, 'session_expired' => true, 'message' => $message]);
         exit;
     }
+
+    http_response_code(403);
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+    }
+    echo json_encode(['success' => false, 'message' => 'Security validation failed. Please refresh the page and try again.']);
+    exit;
 }

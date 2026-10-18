@@ -99,6 +99,7 @@ class ShopwaveDbSessionHandler implements SessionHandlerInterface
 }
 
 $_swDbPath = __DIR__ . '/../authentication/database.php';
+global $pdo;
 if (!isset($pdo)) {
     require_once $_swDbPath;
 }
@@ -138,6 +139,8 @@ session_start();
 
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $_swInactivityTimeout)) {
     $wasLoggedIn = isLoggedIn();
+    // Lets requireCsrfPost() explain why a form failed (see core/security.php).
+    $GLOBALS['sw_session_expired'] = $wasLoggedIn ? 'user' : 'guest';
     $_SESSION = [];
 
     if (ini_get('session.use_cookies')) {

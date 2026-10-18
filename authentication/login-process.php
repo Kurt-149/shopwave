@@ -24,6 +24,11 @@ if (empty($usernameOrEmail) || empty($password)) {
     exit;
 }
 
+if (!checkRateLimit('login_ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 20, 300)) {
+    header("Location: login-page.php?error=" . urlencode("Too many login attempts from this network. Please try again in 5 minutes."));
+    exit;
+}
+
 if (!checkRateLimit('login_' . $usernameOrEmail, 5, 300)) {
     header("Location: login-page.php?error=" . urlencode("Too many login attempts. Please try again in 5 minutes."));
     exit;
@@ -44,9 +49,18 @@ try {
         exit;
     }
     
+    // Keep the security token across login: pages the user already has open (other tabs,
+    // or a product page opened before logging in) still hold it, so it must stay valid.
+    $keepCsrfToken = $_SESSION['csrf_token'] ?? null;
+
     $_SESSION = array();
-    
+
     session_regenerate_id(true);
+
+    if ($keepCsrfToken !== null) {
+        $_SESSION['csrf_token']        = $keepCsrfToken;
+        $_SESSION['csrf_token_expiry'] = time() + 3600;
+    }
     
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];

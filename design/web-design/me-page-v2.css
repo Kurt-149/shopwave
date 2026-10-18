@@ -289,11 +289,6 @@
 }
 .edit-profile-card .upload-btn:hover { background: var(--sw-ocean-deep) !important; }
 
-/* Space the header search from the account links */
-.header .actions { gap: 14px; }
-.header .actions > a,
-.header .actions > .icon { margin-left: 0; }
-
 /* ---- My Reviews: cards, product link, clear actions ---- */
 #reviewsList .review-card {
     background: #fff;
@@ -362,3 +357,18 @@
     #reviewsList .rv-actions { margin-left: 0; }
     #reviewsList .rv-btn { justify-content: center; }
 }
+
+/* Order cards: first 2 items shown, the rest behind a toggle */
+.order-more { margin-top: 4px; }
+.order-more > summary {
+    list-style: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sw-ocean);
+    padding: 8px 0;
+}
+.order-more > summary::-webkit-details-marker { display: none; }
+.order-more .om-open { display: none; }
+.order-more[open] .om-open { display: inline; }
+.order-more[open] .om-closed { display: none; }
