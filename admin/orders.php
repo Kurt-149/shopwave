@@ -28,6 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
             $stmt = $pdo->prepare("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?");
             $stmt->execute([$newStatus, $orderId]);
 
+            // Keep the latest admin message on the order so the customer sees it on the order card.
+            // Needs migrations/002_orders_admin_note.sql; if it has not been run, skip quietly.
+            try {
+                $noteStmt = $pdo->prepare("UPDATE orders SET admin_note = ? WHERE id = ?");
+                $noteStmt->execute([$adminNote !== '' ? $adminNote : null, $orderId]);
+            } catch (PDOException $e) {
+                error_log('[admin_note] ' . $e->getMessage());
+            }
+
             $messages = [
                 'pending'    => "Your order #{$orderRow['order_number']} is pending.",
                 'processing' => "Your order #{$orderRow['order_number']} is now being processed.",

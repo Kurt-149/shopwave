@@ -151,8 +151,11 @@
 .order-status.status-shipped { background: #dff0ee; color: #25615a; }
 .order-status.status-delivered { background: #e3f1ee; color: #2d6e66; }
 .order-status.status-rejected { background: #f8e6dc; color: #9a3d22; }
+.order-status.status-processing { background: #e4e9f5; color: #2f4a7a; }
+.order-status.status-completed { background: #e3f1ee; color: #2d6e66; }
+.order-status.status-cancelled { background: #f3e3e3; color: #8a2c2c; }
 
-/* Progress timeline: Placed, Shipped, Delivered (dots and connectors are real elements) */
+/* Progress timeline: Placed, Processing, Shipped, Delivered (dots and connectors are real elements) */
 .order-timeline {
     list-style: none;
     display: flex;
@@ -208,6 +211,8 @@
     border-radius: 2px;
     padding: 10px 18px;
     font-weight: 600;
+    height: 38px;
+    box-sizing: border-box;
 }
 .btn-review:hover { background: var(--sw-ocean-deep); }
 
@@ -372,3 +377,86 @@
 .order-more .om-open { display: none; }
 .order-more[open] .om-open { display: inline; }
 .order-more[open] .om-closed { display: none; }
+
+/* Order card actions: Cancel (pending orders only) and View Details */
+.order-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.btn-cancel-order {
+    background: #fff;
+    color: #8a2c2c;
+    border: 1px solid #d9a3a3;
+    border-radius: 2px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 38px;
+    box-sizing: border-box;
+}
+.btn-cancel-order:hover { background: #f8e6e6; }
+
+/* Cancel confirmation dialog (replaces the browser's confirm box) */
+.cancel-dialog {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+.cancel-dialog[hidden] { display: none; }
+.cancel-dialog-box {
+    background: #fff;
+    border-radius: 4px;
+    max-width: 420px;
+    width: 100%;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+.cancel-dialog-box h2 {
+    font-family: var(--sw-serif);
+    font-size: 22px;
+    color: var(--sw-ocean-deep);
+    margin: 0 0 8px;
+}
+.cancel-dialog-box p { color: var(--sw-muted); margin: 0 0 20px; line-height: 1.5; }
+.cancel-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.btn-keep-order {
+    background: #fff;
+    color: var(--sw-ocean);
+    border: 1px solid var(--sw-ocean);
+    border-radius: 2px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-cancel-confirm {
+    background: #8a2c2c;
+    color: #fff;
+    border: 1px solid #8a2c2c;
+    border-radius: 2px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-cancel-confirm:disabled { opacity: 0.6; cursor: wait; }
+
+/* Admin message on an order card */
+.order-admin-note {
+    margin: 14px 20px 0;
+    padding: 10px 14px;
+    background: #f3f6f9;
+    border-left: 3px solid var(--sw-ocean);
+    border-radius: 2px;
+}
+.order-admin-note.status-cancelled { border-left-color: #8a2c2c; background: #faf3f3; }
+.order-admin-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sw-muted);
+    margin-bottom: 4px;
+}
+.order-admin-note p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sw-ink); }

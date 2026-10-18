@@ -24,7 +24,7 @@ if (!checkRateLimit($rate_limit_key, 30, 60)) {
 $status = $_GET['status'] ?? 'all';
 $user_id = $_SESSION['user_id'];
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$limit = 5;
+$limit = 2;
 $offset = ($page - 1) * $limit;
 
 try {
@@ -32,14 +32,21 @@ try {
     $params = [$user_id];
 
     if ($status !== 'all') {
-        $allowed_statuses = ['pending', 'shipped', 'delivered', 'cancelled'];
-        if (!in_array($status, $allowed_statuses)) {
+        // Each tab covers every admin status that belongs with it.
+        $tabStatuses = [
+            'pending'   => ['pending', 'processing'],
+            'shipped'   => ['shipped'],
+            'delivered' => ['delivered', 'completed'],
+            'cancelled' => ['cancelled'],
+        ];
+        if (!isset($tabStatuses[$status])) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid status']);
             exit;
         }
-        $where .= " AND o.status = ?";
-        $params[] = $status;
+        $statusList = $tabStatuses[$status];
+        $where .= " AND o.status IN (" . implode(',', array_fill(0, count($statusList), '?')) . ")";
+        array_push($params, ...$statusList);
     }
 
     $countSql = "SELECT COUNT(DISTINCT o.id) FROM orders o WHERE $where";
@@ -48,11 +55,16 @@ try {
     $totalOrders = $stmtCount->fetchColumn();
     $totalPages = ceil($totalOrders / $limit);
 
+    // admin_note needs migrations/002_orders_admin_note.sql; until it is run, return null.
+    $hasAdminNote = (bool) $pdo->query("SHOW COLUMNS FROM orders LIKE 'admin_note'")->fetch();
+    $adminNoteSelect = $hasAdminNote ? 'o.admin_note' : 'NULL AS admin_note';
+
     $sql = "
         SELECT
             o.id,
             o.order_number,
             o.status,
+            $adminNoteSelect,
             o.total_amount,
             o.subtotal,
             o.shipping_fee,
@@ -86,8 +98,10 @@ try {
         $orderId = $row['id'];
         if (!isset($orders[$orderId])) {
             $orders[$orderId] = [
+                'id'             => (int) $row['id'],
                 'order_number'   => $row['order_number'],
                 'status'         => $row['status'],
+                'admin_note'     => $row['admin_note'] ?? null,
                 'total_amount'   => $row['total_amount'],
                 'subtotal'       => $row['subtotal'],
                 'shipping_fee'   => $row['shipping_fee'],

@@ -250,11 +250,7 @@ try {
                                                         </div>
                                                         <div>
                                                             <strong><?php echo htmlspecialchars($customer['username']); ?></strong>
-                                                            <?php if ($customer['full_name']): ?>
-                                                                <div style="font-size: var(--fs-xs); color: var(--muted);">
-                                                                    <?php echo htmlspecialchars($customer['full_name']); ?>
-                                                                </div>
-                                                            <?php endif; ?>
+                                            
                                                         </div>
                                                     </div>
                                                 </td>

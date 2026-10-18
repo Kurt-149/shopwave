@@ -43,9 +43,9 @@ try {
 
     $s = $pdo->prepare("SELECT
         COUNT(*) AS total,
-        SUM(status = 'pending')   AS pending,
-        SUM(status = 'shipped')   AS shipped,
-        SUM(status = 'delivered') AS delivered
+        SUM(status IN ('pending', 'processing'))  AS pending,
+        SUM(status = 'shipped')                   AS shipped,
+        SUM(status IN ('delivered', 'completed')) AS delivered
       FROM orders WHERE user_id = ?");
     $s->execute([$userId]);
     $oc = $s->fetch(PDO::FETCH_ASSOC);
@@ -344,6 +344,7 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                     <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
                     <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
                     <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                    <a href="#cancelled" class="order-tab" onclick="showSection('cancelled'); return false;">Cancelled</a>
                 </nav>
                         <div class="orders-list" id="toShipOrders">
                             <div class="loading">Loading orders...</div>
@@ -357,6 +358,7 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                     <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
                     <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
                     <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                    <a href="#cancelled" class="order-tab" onclick="showSection('cancelled'); return false;">Cancelled</a>
                 </nav>
                         <div class="orders-list" id="toReceiveOrders">
                             <div class="loading">Loading orders...</div>
@@ -370,8 +372,23 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                     <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
                     <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
                     <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                    <a href="#cancelled" class="order-tab" onclick="showSection('cancelled'); return false;">Cancelled</a>
                 </nav>
                         <div class="orders-list" id="completedOrders">
+                            <div class="loading">Loading orders...</div>
+                        </div>
+                    </section>
+
+                    <section id="section-cancelled" class="content-section">
+                        <h1 class="section-title">Cancelled Orders</h1>
+                <nav class="order-tabs" aria-label="Filter orders by status">
+                    <a href="#orders" class="order-tab" onclick="showSection('orders'); return false;">All</a>
+                    <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
+                    <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
+                    <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                    <a href="#cancelled" class="order-tab" onclick="showSection('cancelled'); return false;">Cancelled</a>
+                </nav>
+                        <div class="orders-list" id="cancelledOrders">
                             <div class="loading">Loading orders...</div>
                         </div>
                     </section>
@@ -390,6 +407,7 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                     <a href="#to-ship" class="order-tab" onclick="showSection('to-ship'); return false;">To Ship</a>
                     <a href="#to-receive" class="order-tab" onclick="showSection('to-receive'); return false;">To Receive</a>
                     <a href="#completed" class="order-tab" onclick="showSection('completed'); return false;">Completed</a>
+                    <a href="#cancelled" class="order-tab" onclick="showSection('cancelled'); return false;">Cancelled</a>
                 </nav>
                         <div class="orders-list" id="allOrders">
                             <div class="loading">Loading orders...</div>
@@ -473,6 +491,17 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
             <img src="" alt="Profile Image" id="profileLightboxImage">
         </div>
     </div>
+    <div class="cancel-dialog" id="cancelDialog" hidden role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
+        <div class="cancel-dialog-box">
+            <h2 id="cancelDialogTitle">Cancel this order?</h2>
+            <p id="cancelDialogText"></p>
+            <div class="cancel-dialog-actions">
+                <button type="button" class="btn-keep-order" id="cancelDialogKeep">Keep order</button>
+                <button type="button" class="btn-cancel-confirm" id="cancelDialogConfirm">Yes, cancel order</button>
+            </div>
+        </div>
+    </div>
+
     <script src="<?php echo asset('design/csrf-fetch.js'); ?>"></script>
     <script src="<?php echo asset('design/toast.js'); ?>"></script>
     <script src="<?php echo asset('design/item-count.js'); ?>"></script>

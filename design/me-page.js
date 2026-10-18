@@ -2,6 +2,7 @@ let currentPages = {
     'to-ship': 1,
     'to-receive': 1,
     'completed': 1,
+    'cancelled': 1,
     'orders': 1,
     'reviews': 1,
     'notifications': 1
@@ -35,7 +36,7 @@ function showSection(sectionName) {
     if (selected) selected.classList.add('active');
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     // Status sub-sections (To Ship, To Receive, Completed) highlight the Orders link
-    const subSectionParent = { 'to-ship': 'orders', 'to-receive': 'orders', 'completed': 'orders' };
+    const subSectionParent = { 'to-ship': 'orders', 'to-receive': 'orders', 'completed': 'orders', 'cancelled': 'orders' };
     const activeNav = document.querySelector(`.profile-nav [href="#${subSectionParent[sectionName] || sectionName}"]`);
     if (activeNav) activeNav.classList.add('active');
     if (selected) selected.querySelectorAll('.order-tab').forEach(t => t.classList.toggle('active', t.getAttribute('href') === `#${sectionName}`));
@@ -48,6 +49,7 @@ function loadSectionData(sectionName) {
         case 'to-ship': loadOrders('pending', 1); break;
         case 'to-receive': loadOrders('shipped', 1); break;
         case 'completed': loadOrders('delivered', 1); break;
+        case 'cancelled': loadOrders('cancelled', 1); break;
         case 'orders': loadOrders('all', 1); break;
         case 'reviews': loadReviews(1); break;
         case 'notifications': loadNotifications(1); break;
@@ -60,13 +62,15 @@ function loadOrders(status, page) {
         pending: 'toShipOrders',
         shipped: 'toReceiveOrders',
         delivered: 'completedOrders',
+        cancelled: 'cancelledOrders',
         all: 'allOrders'
     };
     const container = document.getElementById(map[status]);
     if (!container) return;
     const section = status === 'all' ? 'orders' :
                     status === 'pending' ? 'to-ship' :
-                    status === 'shipped' ? 'to-receive' : 'completed';
+                    status === 'shipped' ? 'to-receive' :
+                    status === 'cancelled' ? 'cancelled' : 'completed';
     currentPages[section] = page;
     container.innerHTML = '<div class="loading">Loading orders...</div>';
     fetch(`../backend/get-order.php?status=${status}&page=${page}`, { credentials: 'include' })
@@ -112,7 +116,7 @@ function createPagination(pagination, status, section) {
 }
 
 function getStatusLabel(status) {
-    return { pending: 'Pending Orders', shipped: 'Orders to Receive', delivered: 'Completed Orders', all: 'Orders' }[status] || 'Orders';
+    return { pending: 'Pending Orders', shipped: 'Orders to Receive', delivered: 'Completed Orders', cancelled: 'Cancelled Orders', all: 'Orders' }[status] || 'Orders';
 }
 
 function createOrderCard(order) {
@@ -147,21 +151,109 @@ function createOrderCard(order) {
                 <span class="order-status status-${order.status}">${capitalizeStatus(order.status)}</span>
             </div>
             ${renderOrderTimeline(order.status)}
+            ${renderAdminNote(order)}
             <div class="order-items">
                 ${itemsHtml}
             </div>
             <div class="order-footer">
                 <div class="order-total">P${formatPrice(order.total_amount)}</div>
-                <button class="btn-review" onclick="viewOrderDetails('${escapeHtml(orderNumber)}')">View Details</button>
+                <div class="order-actions">
+                    ${order.status === 'pending'
+                        ? `<button class="btn-cancel-order" onclick="cancelOrder(${parseInt(order.id, 10)}, '${escapeHtml(orderNumber)}')">Cancel order</button>`
+                        : ''}
+                    <button class="btn-review" onclick="viewOrderDetails('${escapeHtml(orderNumber)}')">View Details</button>
+                </div>
             </div>
         </div>
     `;
 }
 
+// Customer cancels a pending order. Asks in the page's own dialog, then the server checks ownership, status and the token.
+let pendingCancel = null;
+
+function cancelOrder(orderId, orderNumber) {
+    pendingCancel = { orderId, orderNumber };
+    document.getElementById('cancelDialogText').textContent =
+        `Order #${orderNumber} will be cancelled. You cannot undo this.`;
+    const confirmBtn = document.getElementById('cancelDialogConfirm');
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Yes, cancel order';
+    document.getElementById('cancelDialog').hidden = false;
+    document.getElementById('cancelDialogKeep').focus();
+}
+
+function closeCancelDialog() {
+    pendingCancel = null;
+    document.getElementById('cancelDialog').hidden = true;
+}
+
+function confirmCancelOrder() {
+    if (!pendingCancel) return;
+    const { orderId } = pendingCancel;
+    const confirmBtn = document.getElementById('cancelDialogConfirm');
+    const text = document.getElementById('cancelDialogText');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Cancelling...';
+
+    const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    fetch('../backend/cancel-order.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': token },
+        body: 'order_id=' + encodeURIComponent(orderId)
+    })
+    .then(res => res.json().catch(() => ({ success: false, message: 'Unexpected response from the server.' })))
+    .then(data => {
+        if (data.success) {
+            closeCancelDialog();
+            if (typeof showToast === 'function') showToast('Order cancelled', 'success');
+            // Reload so every tab, the counts and the notifications are up to date.
+            setTimeout(() => location.reload(), 600);
+        } else {
+            text.textContent = data.message || 'Could not cancel the order.';
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Yes, cancel order';
+        }
+    })
+    .catch(() => {
+        text.textContent = 'Could not cancel the order. Please try again.';
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Yes, cancel order';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('cancelDialogKeep')?.addEventListener('click', closeCancelDialog);
+    document.getElementById('cancelDialogConfirm')?.addEventListener('click', confirmCancelOrder);
+    document.getElementById('cancelDialog')?.addEventListener('click', e => {
+        if (e.target.id === 'cancelDialog') closeCancelDialog();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && pendingCancel) closeCancelDialog();
+    });
+});
+
+// The admin's message for this order: the note they wrote, or a standard line for the status.
+function renderAdminNote(order) {
+    const standard = {
+        shipped: 'Your order is on its way.',
+        delivered: 'Your order has been delivered. Enjoy!',
+        completed: 'Your order is complete. Thank you for shopping with us!',
+        cancelled: 'This order was cancelled.'
+    }[order.status] || '';
+    const note = (order.admin_note || '').trim();
+    const text = note || standard;
+    if (!text) return '';
+    return `<div class="order-admin-note status-${escapeHtml(order.status)}">
+                <span class="order-admin-label">Message from ShopWave</span>
+                <p>${escapeHtml(text)}</p>
+            </div>`;
+}
+
 function renderOrderTimeline(status) {
-    if (status === 'rejected') return '';
-    const steps = ['Placed', 'Shipped', 'Delivered'];
-    const level = { pending: 1, processing: 1, shipped: 2, delivered: 3, completed: 3 }[status] || 1;
+    if (status === 'cancelled' || status === 'rejected') return '';
+    const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
+    const level = { pending: 1, processing: 2, shipped: 3, delivered: 4, completed: 4 }[status] || 1;
     return `<ol class="order-timeline" aria-label="Order progress">${steps.map((label, i) =>
         `<li class="${i + 1 < level ? 'done' : ''}${i + 1 === level ? ' current' : ''}"><span class="tl-dot"></span><span class="tl-line"></span>${label}</li>`).join('')}</ol>`;
 }
@@ -861,7 +953,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    const valid = ['profile', 'edit-profile', 'to-ship', 'to-receive', 'completed', 'orders', 'reviews', 'notifications', 'settings'];
+    const valid = ['profile', 'edit-profile', 'to-ship', 'to-receive', 'completed', 'cancelled', 'orders', 'reviews', 'notifications', 'settings'];
     let hash = window.location.hash.replace('#', '');
     if (hash.startsWith('notif-') || hash.startsWith('notification-')) {
         const notifId = hash.replace('notif-', '').replace('notification-', '');
