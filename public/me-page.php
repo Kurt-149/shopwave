@@ -310,24 +310,14 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
                                 </div>
 
                                 <div class="form-divider"></div>
-                                <p style="font-size:.875rem;font-weight:600;color:#64748b;margin-bottom:1rem;">
-                                    Change Password <span style="font-weight:400;">(leave blank to keep current)</span>
+                                <p style="font-size:.875rem;font-weight:600;color:#64748b;margin-bottom:1rem;">Password</p>
+                                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem;">
+                                    To change your password, we email you a 6-digit code first.
                                 </p>
-
-                                <div class="form-group">
-                                    <label for="current_password">Current Password</label>
-                                    <input type="password" id="current_password" name="current_password" placeholder="Enter your current password" autocomplete="current-password">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="new_password">New Password</label>
-                                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password (min 8 characters)" autocomplete="new-password">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="confirm_password">Confirm New Password</label>
-                                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" autocomplete="new-password">
-                                </div>
+                                <button type="button" class="btn-secondary"
+                                        onclick="document.getElementById('changePasswordRequestForm').submit();">
+                                    Change Password
+                                </button>
 
                                 <div class="form-actions">
                                     <button type="button" class="btn-secondary" onclick="showSection('profile')">Cancel</button>
@@ -509,6 +499,9 @@ $isAdmin    = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     <script>window.APP_ROOT = '<?php echo $root; ?>';</script>
     <script src="<?php echo asset('design/notifications.js'); ?>"></script>
     <script src="<?php echo asset('design/me-page.js'); ?>"></script>
+    <form id="changePasswordRequestForm" method="POST" action="../authentication/change-password-request.php" hidden>
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES); ?>">
+    </form>
 </body>
 
 </html>
