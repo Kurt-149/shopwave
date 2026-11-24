@@ -61,7 +61,7 @@ class ShopwaveDbSessionHandler implements SessionHandlerInterface
                 $id,
                 $userId,
                 $_SERVER['REMOTE_ADDR'] ?? '',
-                substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+                substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),// 1byte
                 $data,
                 time(),
             ]);
