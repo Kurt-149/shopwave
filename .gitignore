@@ -9,3 +9,4 @@ vendor/
 node_modules/
 !backend/migrations/
 !backend/migrations/*.sql
+test-verify.php
