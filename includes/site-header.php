@@ -25,7 +25,6 @@ if (!function_exists('timeAgo')) {
     }
 }
 ?>
-<!-- Adds the CSRF token to every POST body sent with fetch(), on any page that uses this header. -->
     <script>
     (function () {
         var meta = document.querySelector('meta[name="csrf-token"]');
