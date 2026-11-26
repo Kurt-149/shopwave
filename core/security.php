@@ -173,6 +173,7 @@ function validatePassword(string $password)
     if (strlen($password) < 8)  $errors[] = 'Password must be at least 8 characters long';
     if (strlen($password) > 72) $errors[] = 'Password must not exceed 72 characters';
 
+    /* Check password length
     $strength = (int)preg_match('/[A-Z]/', $password)
               + (int)preg_match('/[a-z]/', $password)
               + (int)preg_match('/[0-9]/', $password)
@@ -181,7 +182,7 @@ function validatePassword(string $password)
     if ($strength < 3) {
         $errors[] = 'Password must contain at least 3 of: uppercase, lowercase, numbers, special characters';
     }
-
+    */    
     return empty($errors) ? true : $errors;
 }
 

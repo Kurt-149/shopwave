@@ -52,9 +52,11 @@
     --nav-height: 68px;
     --inner-max: 1400px;
     --inner-pad: clamp(1rem, 4vw, 3rem);
+
+    /* font weight */
+    --font-wgt: 300;
 }
 
-/* ---------- 2. Base ---------- */
 * {
     box-sizing: border-box;
     margin: 0;
